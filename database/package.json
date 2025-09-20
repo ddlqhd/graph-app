@@ -1,0 +1,15 @@
+{
+  "name": "graphsql-database",
+  "version": "1.0.0",
+  "description": "GraphSQL 数据库初始化工具",
+  "main": "import-data.js",
+  "scripts": {
+    "init": "node import-data.js",
+    "clear": "node clear-data.js"
+  },
+  "dependencies": {
+    "neo4j-driver": "^5.13.0"
+  },
+  "author": "GraphSQL Team",
+  "license": "MIT"
+}
