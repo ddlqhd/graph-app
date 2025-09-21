@@ -143,26 +143,40 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* GitHub-style Home View Layout */
 .home-view {
   position: relative;
   height: 100%;
   width: 100%;
   min-height: 600px;
+  background: var(--color-bg-subtle);
+  padding: var(--space-3);
+  overflow: hidden;
 }
 
 .view-container {
   display: flex;
   height: 100%;
-  gap: 16px;
+  gap: var(--space-3);
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* GitHub-style Graph Section */
 .graph-section {
   flex: 1;
   position: relative;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-default);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-small);
   overflow: hidden;
+  border: 1px solid var(--color-border-default);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.graph-section:hover {
+  box-shadow: var(--shadow-medium);
+  border-color: var(--color-border-muted);
 }
 
 .graph-viewer {
@@ -170,20 +184,39 @@ onUnmounted(() => {
   height: 100%;
 }
 
+/* GitHub-style Error Message */
 .error-message {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
+  top: var(--space-3);
+  left: var(--space-3);
+  right: var(--space-3);
   z-index: 1000;
 }
 
-.error-actions {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
+.error-message .el-alert {
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(209, 36, 47, 0.3);
+  background: #ffebe9;
+  color: var(--color-danger);
+  box-shadow: var(--shadow-small);
 }
 
+.error-actions {
+  margin-top: var(--space-2);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.error-actions .el-button {
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+/* GitHub-style Empty State */
 .empty-state {
   position: absolute;
   top: 0;
@@ -193,33 +226,98 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-bg-default);
 }
 
+.empty-state .el-empty {
+  padding: var(--space-6);
+}
+
+.empty-state .el-button {
+  border-radius: var(--border-radius);
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-weight: 500;
+  background: var(--color-success);
+  border: 1px solid rgba(31, 35, 40, 0.15);
+  color: var(--color-fg-on-emphasis);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  box-shadow: var(--shadow-small), var(--shadow-inset);
+}
+
+.empty-state .el-button:hover {
+  background: var(--color-success-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium), var(--shadow-inset);
+}
+
+/* GitHub-style FAB (Floating Action Button) */
 .fab-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: var(--space-4);
+  right: var(--space-4);
   z-index: 1000;
 }
 
 .fab-button {
-  width: 56px;
-  height: 56px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  width: 48px;
+  height: 48px;
+  box-shadow: var(--shadow-large);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  background: var(--color-success);
+  border: 1px solid rgba(31, 35, 40, 0.15);
+  border-radius: 50%;
+  color: var(--color-fg-on-emphasis);
+  position: relative;
+  overflow: hidden;
+}
+
+.fab-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.fab-button:hover::before {
+  opacity: 1;
 }
 
 .fab-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: var(--color-success-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(26, 127, 55, 0.4);
 }
 
-/* 响应式设计 */
+.fab-button:active {
+  transform: translateY(-1px);
+}
+
+/* GitHub-style Responsive Design */
+@media (max-width: 1024px) {
+  .home-view {
+    padding: var(--space-3);
+  }
+
+  .view-container {
+    gap: var(--space-3);
+  }
+}
+
 @media (max-width: 768px) {
+  .home-view {
+    padding: var(--space-2);
+  }
+
   .view-container {
     flex-direction: column;
     height: auto;
+    gap: var(--space-3);
   }
 
   .graph-section {
@@ -228,13 +326,13 @@ onUnmounted(() => {
   }
 
   .fab-container {
-    bottom: 16px;
-    right: 16px;
+    bottom: var(--space-3);
+    right: var(--space-3);
   }
 
   .fab-button {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
   }
 }
 
@@ -242,15 +340,44 @@ onUnmounted(() => {
   .home-view {
     height: auto;
     min-height: auto;
+    padding: var(--space-2);
   }
 
   .view-container {
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .graph-section {
     height: 400px;
     min-height: 350px;
+    border-radius: var(--border-radius);
+  }
+
+  .fab-button {
+    width: 52px;
+    height: 52px;
+  }
+
+  .error-message {
+    top: var(--space-2);
+    left: var(--space-2);
+    right: var(--space-2);
+  }
+}
+
+/* Smooth loading transitions */
+.graph-section {
+  animation: fadeInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

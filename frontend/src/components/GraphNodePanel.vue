@@ -268,48 +268,94 @@ const copyNodeInfo = async () => {
 <style scoped>
 .node-panel {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 350px;
-  max-height: calc(100vh - 40px);
+  top: 16px;
+  right: 16px;
+  width: 320px;
+  max-height: calc(100vh - 32px);
   overflow-y: auto;
   z-index: 100;
+  animation: slideInRight 0.2s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .panel-card {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
+  background: #ffffff;
+  overflow: hidden;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 4px 0;
 }
 
 .panel-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 16px;
+  color: #24292f;
 }
 
 .title-icon {
-  color: #409eff;
+  color: #0969da;
+  font-size: 16px;
+}
+
+.panel-header .el-button {
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  color: #656d76;
+  transition: all 0.2s ease;
+}
+
+.panel-header .el-button:hover {
+  background: #f3f4f6;
+  border-color: #afb8c1;
 }
 
 .node-info {
-  max-height: 500px;
+  max-height: 450px;
   overflow-y: auto;
+  padding: 0;
 }
 
 .info-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
+  transition: all 0.2s ease;
+}
+
+.info-section:hover {
+  background: #f3f4f6;
 }
 
 .info-section h4 {
-  margin: 0 0 10px 0;
-  color: #303133;
+  margin: 0 0 8px 0;
+  color: #24292f;
   font-size: 14px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -318,10 +364,21 @@ const copyNodeInfo = async () => {
 .name-tag {
   color: white !important;
   border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  font-size: 12px;
 }
 
 .item-badge {
-  margin-left: 4px;
+  margin-left: 6px;
+}
+
+.item-badge .el-badge__content {
+  background: #0969da;
+  border: none;
+  border-radius: 8px;
+  font-size: 10px;
 }
 
 .adjacent-nodes {
@@ -332,14 +389,18 @@ const copyNodeInfo = async () => {
 
 .adjacent-node-tag {
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   color: white !important;
   border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  font-size: 11px;
 }
 
 .adjacent-node-tag:hover {
+  opacity: 0.8;
   transform: scale(1.05);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .connected-edges {
@@ -352,43 +413,83 @@ const copyNodeInfo = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
-  background: #f5f7fa;
-  border-radius: 4px;
+  padding: 6px 8px;
+  background: #ffffff;
+  border-radius: 6px;
   font-size: 12px;
+  border: 1px solid #d0d7de;
+  transition: all 0.2s ease;
+}
+
+.edge-item:hover {
+  background: #f6f8fa;
+}
+
+.edge-item .el-tag {
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 10px;
 }
 
 .edge-direction {
-  color: #909399;
+  color: #656d76;
   font-size: 11px;
+  font-weight: 400;
 }
 
 .panel-actions {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  padding: 4px 0;
 }
 
 .panel-actions .el-button {
   flex: 1;
+  border-radius: 6px;
+  height: 32px;
+  font-weight: 500;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  border: 1px solid #d0d7de;
+}
+
+.panel-actions .el-button:first-child {
+  background: #f6f8fa;
+  color: #24292f;
+}
+
+.panel-actions .el-button:first-child:hover {
+  background: #f3f4f6;
+  border-color: #afb8c1;
+}
+
+.panel-actions .el-button.el-button--primary {
+  background: #2da44e;
+  border-color: #2da44e;
+  color: #ffffff;
+}
+
+.panel-actions .el-button.el-button--primary:hover {
+  background: #2c974b;
+  border-color: #2c974b;
 }
 
 /* 滚动条样式 */
 .node-info::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 
 .node-info::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
+  background: #f6f8fa;
 }
 
 .node-info::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
+  background: #d0d7de;
+  border-radius: 4px;
 }
 
 .node-info::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #afb8c1;
 }
 </style>

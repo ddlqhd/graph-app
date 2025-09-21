@@ -87,6 +87,15 @@ const handleThemeCommand = (command: string) => {
               />
             </el-tooltip>
 
+            <el-tooltip content="组件演示">
+              <el-button
+                type="text"
+                @click="$router.push('/demo')"
+              >
+                演示
+              </el-button>
+            </el-tooltip>
+
             <el-dropdown @command="handleThemeCommand">
               <el-button type="text" :icon="Setting" />
               <template #dropdown>
@@ -132,14 +141,24 @@ const handleThemeCommand = (command: string) => {
 </template>
 
 <style scoped>
+/* GitHub-style App Container */
 .app-container {
   min-height: 100vh;
+  background: var(--color-bg-default);
+  display: flex;
+  flex-direction: column;
 }
 
+/* GitHub-style Header */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-emphasis);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   padding: 0;
+  border-bottom: 1px solid rgba(240, 246, 252, 0.1);
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .header-content {
@@ -147,73 +166,180 @@ const handleThemeCommand = (command: string) => {
   justify-content: space-between;
   align-items: center;
   height: 100%;
-  padding: 0 24px;
+  padding: 0 var(--space-4);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
 }
 
+/* Logo Section with GitHub-style branding */
 .logo-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .logo-icon {
-  color: white;
+  color: var(--color-fg-on-emphasis);
+  font-size: 24px;
 }
 
 .app-title {
-  color: white;
+  color: var(--color-fg-on-emphasis);
   margin: 0;
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.003em;
+  line-height: 1.25;
 }
 
 .app-subtitle {
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
-  margin-left: 8px;
+  margin-left: var(--space-2);
+  font-weight: 400;
+  opacity: 0.9;
 }
 
+/* GitHub-style Header Actions */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .header-actions .el-button {
-  color: white;
-  border: none;
+  color: var(--color-fg-on-emphasis);
+  border: 1px solid rgba(240, 246, 252, 0.1);
   background: transparent;
+  border-radius: var(--border-radius);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-actions .el-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.header-actions .el-button:hover::before {
+  opacity: 1;
 }
 
 .header-actions .el-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(240, 246, 252, 0.3);
+  transform: translateY(-1px);
 }
 
+.header-actions .el-button:active {
+  transform: translateY(0);
+}
+
+/* GitHub-style Main Content */
 .app-main {
-  padding: 24px;
-  background: #f5f7fa;
-  min-height: calc(100vh - 120px);
+  padding: var(--space-4);
+  background: var(--color-bg-subtle);
+  flex: 1;
+  min-height: 0;
 }
 
+/* GitHub-style Footer */
 .app-footer {
-  background: #303133;
-  color: white;
-  padding: 12px 24px;
+  background: var(--color-bg-default);
+  color: var(--color-fg-muted);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+  margin-top: auto;
 }
 
 .footer-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 400;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .footer-links {
   display: flex;
-  gap: 16px;
+  gap: var(--space-3);
+  align-items: center;
 }
 
 .footer-links .el-link {
-  color: #409eff;
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.footer-links .el-link:hover {
+  color: var(--color-primary-hover);
+  background: rgba(9, 105, 218, 0.1);
+  text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 var(--space-3);
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .app-main {
+    padding: var(--space-3);
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: var(--space-2);
+    text-align: center;
+  }
+}
+
+/* GitHub-style dropdown improvements */
+:deep(.el-dropdown-menu) {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-large);
+  background: var(--color-bg-default);
+  padding: var(--space-2);
+}
+
+:deep(.el-dropdown-menu__item) {
+  color: var(--color-fg-default);
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background: var(--color-bg-subtle);
+  color: var(--color-fg-default);
 }
 </style>

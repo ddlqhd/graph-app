@@ -32,6 +32,11 @@ const router = createRouter({
       name: 'g6test',
       component: () => import('../views/G6TestView.vue'),
     },
+    {
+      path: '/demo',
+      name: 'demo',
+      component: () => import('../views/ComponentDemo.vue'),
+    },
   ],
 })
 

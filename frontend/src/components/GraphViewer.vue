@@ -767,13 +767,18 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   display: flex;
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #d0d7de;
 }
 
 .graph-container {
   position: relative;
   flex: 1;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: #ffffff;
+  border-radius: 6px;
+  margin: 0;
   overflow: hidden;
 }
 
@@ -788,7 +793,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -799,14 +804,18 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #409eff;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #d0d7de;
+  border-top: 2px solid #0969da;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -818,8 +827,9 @@ onUnmounted(() => {
 
 .loading-content p {
   margin: 0;
-  color: #666;
+  color: #656d76;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .error-overlay {
@@ -832,32 +842,45 @@ onUnmounted(() => {
 
 .graph-toolbar {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background: rgba(255, 255, 255, 0.9);
+  top: 16px;
+  left: 16px;
+  background: #ffffff;
   padding: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 1px solid #d0d7de;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.graph-toolbar:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .graph-legend {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.9);
+  bottom: 16px;
+  right: 16px;
+  background: #ffffff;
   padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border: 1px solid #d0d7de;
   min-width: 120px;
+  transition: all 0.2s ease;
+}
+
+.graph-legend:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .legend-title {
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 8px;
   font-size: 14px;
+  color: #24292f;
 }
 
 .legend-items {
@@ -870,38 +893,47 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 2px 0;
 }
 
 .legend-color {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+  border: 1px solid #d0d7de;
 }
 
 .legend-label {
   font-size: 12px;
-  color: #666;
+  color: #656d76;
+  font-weight: 400;
 }
 
 .debug-info {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 12px;
+  top: 8px;
+  right: 8px;
+  background: #24292f;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
   z-index: 100;
-  border: 1px solid #ddd;
+  border: 1px solid #d0d7de;
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  min-width: 160px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 .debug-info p {
   margin: 2px 0;
+  color: #e6edf3;
+  font-weight: 400;
 }
 
 .debug-actions {
   margin-top: 8px;
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 </style>

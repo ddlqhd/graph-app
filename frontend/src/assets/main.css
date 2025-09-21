@@ -1,5 +1,52 @@
 @import './base.css';
 
+/* GitHub Design System Variables */
+:root {
+  /* Color primitives */
+  --color-primary: #0969da;
+  --color-primary-hover: #0860ca;
+  --color-success: #1a7f37;
+  --color-success-hover: #2da44e;
+  --color-danger: #d1242f;
+  --color-warning: #bf8700;
+  --color-info: #0969da;
+
+  /* Neutral colors */
+  --color-fg-default: #1f2328;
+  --color-fg-muted: #656d76;
+  --color-fg-subtle: #6e7781;
+  --color-fg-on-emphasis: #ffffff;
+
+  /* Background colors */
+  --color-bg-default: #ffffff;
+  --color-bg-subtle: #f6f8fa;
+  --color-bg-muted: #afb8c1;
+  --color-bg-emphasis: #1f2328;
+
+  /* Border colors */
+  --color-border-default: #d0d7de;
+  --color-border-muted: #d8dee4;
+  --color-border-subtle: #afb8c1;
+
+  /* Shadows */
+  --shadow-small: 0 1px 0 rgba(31,35,40,0.04);
+  --shadow-medium: 0 3px 6px rgba(140,149,159,0.15);
+  --shadow-large: 0 8px 24px rgba(140,149,159,0.2);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.25);
+
+  /* Border radius */
+  --border-radius: 6px;
+  --border-radius-large: 12px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 40px;
+}
+
 /* 重置全局样式 */
 * {
   box-sizing: border-box;
@@ -10,6 +57,14 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  line-height: 1.5;
+  color: var(--color-fg-default);
+  background-color: var(--color-bg-default);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 #app {
@@ -18,18 +73,876 @@ html, body {
   margin: 0;
   padding: 0;
   font-weight: normal;
+  background: var(--color-bg-subtle);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
+/* GitHub-style Button System - Enhanced */
+.el-button {
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  transition: all 80ms cubic-bezier(0.33, 1, 0.68, 1);
+  font-size: 14px;
+  line-height: 20px;
+  padding: 5px 16px;
+  border: 1px solid;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-decoration: none;
+  min-height: 32px;
+}
+
+/* GitHub Default Button (Secondary) */
+.el-button--default {
+  color: var(--color-fg-default);
+  background-color: var(--color-bg-default);
+  border-color: var(--color-border-default);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.el-button--default:hover {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-muted);
+  transition-duration: 0.1s;
+}
+
+.el-button--default:active {
+  background-color: hsla(220, 14%, 93%, 1);
+  border-color: var(--color-border-default);
+  transition: none;
+}
+
+.el-button--default:focus {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.el-button--default:focus:not(:focus-visible) {
+  outline: solid 1px transparent;
+}
+
+.el-button--default:focus-visible {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+/* GitHub Primary Button */
+.el-button--primary {
+  color: var(--color-fg-on-emphasis);
+  background-color: var(--color-success);
+  border-color: rgba(31, 35, 40, 0.15);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.el-button--primary:hover {
+  background-color: var(--color-success-hover);
+  border-color: rgba(31, 35, 40, 0.15);
+  transition-duration: 0.1s;
+}
+
+.el-button--primary:active {
+  background-color: hsla(137, 66%, 28%, 1);
+  box-shadow: inset 0 1px 0 rgba(0, 45, 17, 0.2);
+  transition: none;
+}
+
+.el-button--primary:focus {
+  border-color: rgba(31, 35, 40, 0.15);
+  outline: 2px solid var(--color-success);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.el-button--primary:focus:not(:focus-visible) {
+  outline: solid 1px transparent;
+}
+
+.el-button--primary:focus-visible {
+  border-color: rgba(31, 35, 40, 0.15);
+  outline: 2px solid var(--color-success);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+/* GitHub Info/Blue Button */
+.el-button--info {
+  color: var(--color-fg-on-emphasis);
+  background-color: var(--color-primary);
+  border-color: rgba(31, 35, 40, 0.15);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.el-button--info:hover {
+  background-color: var(--color-primary-hover);
+  border-color: rgba(31, 35, 40, 0.15);
+  transition-duration: 0.1s;
+}
+
+.el-button--info:active {
+  background-color: hsla(212, 92%, 42%, 1);
+  box-shadow: inset 0 1px 0 rgba(0, 33, 85, 0.2);
+  transition: none;
+}
+
+.el-button--info:focus {
+  border-color: rgba(31, 35, 40, 0.15);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+/* GitHub Danger Button */
+.el-button--danger {
+  color: var(--color-fg-on-emphasis);
+  background-color: var(--color-danger);
+  border-color: rgba(31, 35, 40, 0.15);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.el-button--danger:hover {
+  background-color: hsla(356, 72%, 44%, 1);
+  border-color: rgba(31, 35, 40, 0.15);
+  transition-duration: 0.1s;
+}
+
+.el-button--danger:active {
+  background-color: hsla(356, 72%, 40%, 1);
+  box-shadow: inset 0 1px 0 rgba(76, 0, 20, 0.2);
+  transition: none;
+}
+
+/* Small Button Variant */
+.el-button--small {
+  padding: 3px 12px;
+  font-size: 12px;
+  line-height: 18px;
+  min-height: 28px;
+}
+
+/* Large Button Variant */
+.el-button--large {
+  padding: 9px 20px;
+  font-size: 16px;
+  line-height: 24px;
+  min-height: 40px;
+}
+
+/* Button Loading State */
+.el-button.is-loading {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Button Disabled State */
+.el-button.is-disabled,
+.el-button:disabled {
+  color: var(--color-fg-muted);
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.el-button.is-disabled:hover,
+.el-button:disabled:hover {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
+}
+
+/* GitHub-style Card System */
+.el-card {
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-default);
+  box-shadow: none;
+  background-color: var(--color-bg-default);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  overflow: hidden;
+}
+
+.el-card:hover {
+  border-color: var(--color-border-muted);
+  box-shadow: var(--shadow-medium);
+}
+
+.el-card__header {
+  border-bottom: 1px solid var(--color-border-default);
+  padding: var(--space-3);
+  background-color: var(--color-bg-subtle);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-fg-default);
+  margin: 0;
+}
+
+.el-card__body {
+  padding: var(--space-3);
+  background-color: var(--color-bg-default);
+}
+
+/* GitHub-style Input System - Enhanced */
+.el-input {
+  --el-input-border-radius: var(--border-radius);
+  --el-input-focus-border-color: var(--color-primary);
+  font-size: 14px;
+}
+
+.el-input__wrapper {
+  border-radius: var(--border-radius);
+  transition: border-color 0.2s cubic-bezier(0.3, 0, 0.5, 1), box-shadow 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  border: 1px solid var(--color-border-default);
+  background-color: var(--color-bg-default);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+  padding: 5px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 32px;
+  position: relative;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--color-border-muted);
+  transition-duration: 0.1s;
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2), 0 0 0 3px rgba(9, 105, 218, 0.12);
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.el-input__wrapper.is-disabled {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
+  color: var(--color-fg-muted);
+  cursor: not-allowed;
+}
+
+.el-input__inner {
+  color: var(--color-fg-default);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  height: auto;
+  line-height: inherit;
+  font-size: inherit;
+  width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.el-input__inner::placeholder {
+  color: var(--color-fg-muted);
+  opacity: 1;
+}
+
+.el-input__inner:disabled {
+  color: var(--color-fg-muted);
+  cursor: not-allowed;
+  -webkit-text-fill-color: var(--color-fg-muted);
+}
+
+/* GitHub-style Input Sizes */
+.el-input--small .el-input__wrapper {
+  padding: 3px 8px;
+  min-height: 28px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.el-input--large .el-input__wrapper {
+  padding: 9px 16px;
+  min-height: 40px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* GitHub-style Input with prefix/suffix */
+.el-input__prefix,
+.el-input__suffix {
+  display: flex;
+  align-items: center;
+  color: var(--color-fg-muted);
+}
+
+.el-input__prefix {
+  padding-right: 8px;
+}
+
+.el-input__suffix {
+  padding-left: 8px;
+}
+
+/* GitHub-style Input Groups */
+.el-input-group__prepend,
+.el-input-group__append {
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius);
+  color: var(--color-fg-default);
+  padding: 0 12px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.el-input-group__prepend {
+  border-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.el-input-group__append {
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.el-input-group .el-input__wrapper {
+  border-radius: 0;
+}
+
+.el-input-group--prepend .el-input__wrapper {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+}
+
+.el-input-group--append .el-input__wrapper {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+
+/* GitHub-style Dropdown and Select System */
+.el-select {
+  --el-select-border-radius: var(--border-radius);
+}
+
+.el-select .el-input__wrapper {
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: border-color 0.2s cubic-bezier(0.3, 0, 0.5, 1), box-shadow 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-select .el-input__wrapper:hover {
+  border-color: var(--color-border-muted);
+}
+
+.el-select .el-input.is-focus .el-input__wrapper {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2), 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.el-select .el-input__suffix {
+  color: var(--color-fg-muted);
+}
+
+.el-select .el-input__suffix .el-icon {
+  transition: transform 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-select.is-expanded .el-input__suffix .el-icon {
+  transform: rotate(180deg);
+}
+
+/* GitHub-style Select Dropdown */
+.el-select-dropdown {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-large);
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  background-color: var(--color-bg-default);
+  padding: 4px 0;
+  margin-top: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.el-select-dropdown__item {
+  padding: 8px 12px;
+  color: var(--color-fg-default);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  border-radius: 0;
+  margin: 0 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.el-select-dropdown__item:hover {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-fg-default);
+}
+
+.el-select-dropdown__item.is-selected {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-fg-default);
+  font-weight: 600;
+}
+
+.el-select-dropdown__item.is-disabled {
+  color: var(--color-fg-muted);
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.el-select-dropdown__item.is-disabled:hover {
+  background-color: transparent;
+}
+
+/* GitHub-style Dropdown Menu (for el-dropdown) */
+.el-dropdown-menu {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius-large);
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  background: var(--color-bg-default);
+  padding: 4px 0;
+  margin: 0;
+  min-width: 160px;
+}
+
+.el-dropdown-menu__item {
+  color: var(--color-fg-default);
+  padding: 8px 16px;
+  border-radius: 0;
+  transition: background-color 0.1s ease;
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.el-dropdown-menu__item:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-fg-default);
+}
+
+.el-dropdown-menu__item.is-disabled {
+  color: var(--color-fg-muted);
+  cursor: not-allowed;
+}
+
+.el-dropdown-menu__item.is-disabled:hover {
+  background: transparent;
+}
+
+.el-dropdown-menu__item--divided {
+  border-top: 1px solid var(--color-border-default);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+/* GitHub-style Tooltip */
+.el-tooltip__popper {
+  background-color: var(--color-bg-emphasis);
+  color: var(--color-fg-on-emphasis);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 4px 8px;
+  max-width: 250px;
+}
+
+.el-tooltip__popper .el-tooltip__arrow {
+  border-top-color: var(--color-bg-emphasis);
+}
+
+.el-tooltip__popper[data-popper-placement^="bottom"] .el-tooltip__arrow {
+  border-bottom-color: var(--color-bg-emphasis);
+}
+
+.el-tooltip__popper[data-popper-placement^="left"] .el-tooltip__arrow {
+  border-left-color: var(--color-bg-emphasis);
+}
+
+.el-tooltip__popper[data-popper-placement^="right"] .el-tooltip__arrow {
+  border-right-color: var(--color-bg-emphasis);
+}
+
+/* GitHub-style Checkbox */
+.el-checkbox {
+  color: var(--color-fg-default);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.el-checkbox__input {
+  vertical-align: middle;
+}
+
+.el-checkbox__inner {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  background-color: var(--color-bg-default);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-checkbox__input:hover .el-checkbox__inner {
+  border-color: var(--color-border-muted);
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.el-checkbox__input.is-checked:hover .el-checkbox__inner {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.el-checkbox__input.is-focus .el-checkbox__inner {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.el-checkbox__label {
+  color: var(--color-fg-default);
+  font-size: 14px;
+  padding-left: 8px;
+}
+
+/* GitHub-style Radio */
+.el-radio {
+  color: var(--color-fg-default);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.el-radio__inner {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 50%;
+  background-color: var(--color-bg-default);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-radio__input:hover .el-radio__inner {
+  border-color: var(--color-border-muted);
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
+}
+
+.el-radio__input.is-checked:hover .el-radio__inner {
+  border-color: var(--color-primary-hover);
+  background-color: var(--color-primary-hover);
+}
+
+.el-radio__input.is-focus .el-radio__inner {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.el-radio__label {
+  color: var(--color-fg-default);
+  font-size: 14px;
+  padding-left: 8px;
+}
+
+/* GitHub-style Switch */
+.el-switch {
+  height: 20px;
+  line-height: 20px;
+}
+
+.el-switch__core {
+  height: 20px;
+  min-width: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-default);
+  background-color: var(--color-bg-subtle);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-switch__core::after {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--color-bg-default);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.el-switch:hover:not(.is-disabled) .el-switch__core {
+  border-color: var(--color-border-muted);
+}
+
+.el-switch.is-checked:hover:not(.is-disabled) .el-switch__core {
+  background-color: var(--color-success-hover);
+  border-color: var(--color-success-hover);
+}
+
+/* GitHub-style Form */
+.el-form {
+  line-height: 1.5;
+}
+
+.el-form-item {
+  margin-bottom: 16px;
+}
+
+.el-form-item__label {
+  color: var(--color-fg-default);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 0 4px 0;
+  margin-bottom: 0;
+}
+
+.el-form-item__content {
+  line-height: 20px;
+  position: relative;
+  font-size: 14px;
+}
+
+.el-form-item__error {
+  color: var(--color-danger);
+  font-size: 12px;
+  line-height: 18px;
+  padding-top: 4px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+
+.el-form-item.is-error .el-input__wrapper {
+  border-color: var(--color-danger);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2), 0 0 0 3px rgba(209, 36, 47, 0.12);
+}
+
+.el-form-item.is-error .el-textarea__inner {
+  border-color: var(--color-danger);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2), 0 0 0 3px rgba(209, 36, 47, 0.12);
+}
+
+/* GitHub-style Textarea */
+.el-textarea {
+  font-size: 14px;
+}
+
+.el-textarea__inner {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius);
+  background-color: var(--color-bg-default);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+  color: var(--color-fg-default);
+  font-size: 14px;
+  line-height: 20px;
+  padding: 8px 12px;
+  resize: vertical;
+  transition: border-color 0.2s cubic-bezier(0.3, 0, 0.5, 1), box-shadow 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  font-family: inherit;
+}
+
+.el-textarea__inner:hover {
+  border-color: var(--color-border-muted);
+}
+
+.el-textarea__inner:focus {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2), 0 0 0 3px rgba(9, 105, 218, 0.12);
+  outline: none;
+}
+
+.el-textarea__inner::placeholder {
+  color: var(--color-fg-muted);
+  opacity: 1;
+}
+
+.el-textarea.is-disabled .el-textarea__inner {
+  background-color: var(--color-bg-subtle);
+  border-color: var(--color-border-default);
+  color: var(--color-fg-muted);
+  cursor: not-allowed;
+}
+
+/* GitHub-style Tag System - Enhanced */
+.el-tag {
+  border-radius: 2em;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 18px;
+  border: 1px solid transparent;
+  background-color: var(--color-bg-subtle);
+  color: var(--color-fg-default);
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+.el-tag--primary {
+  background-color: #ddf4ff;
+  color: #0969da;
+  border-color: rgba(9, 105, 218, 0.1);
+}
+
+.el-tag--success {
+  background-color: #dcfce7;
+  color: #1a7f37;
+  border-color: rgba(26, 127, 55, 0.1);
+}
+
+.el-tag--warning {
+  background-color: #fff8c5;
+  color: #bf8700;
+  border-color: rgba(191, 135, 0, 0.1);
+}
+
+.el-tag--danger {
+  background-color: #ffebe9;
+  color: #d1242f;
+  border-color: rgba(209, 36, 47, 0.1);
+}
+
+/* GitHub-style Links */
 a,
 .green {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+  color: var(--color-primary);
+  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  font-weight: 500;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    color: var(--color-primary-hover);
+    text-decoration: underline;
   }
+}
+
+/* Focus states for accessibility */
+a:focus,
+button:focus,
+.el-button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+.el-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* GitHub-style Scrollbars */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 8px;
+  border: 4px solid var(--color-bg-subtle);
+  min-height: 40px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-subtle);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-fg-muted);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg-subtle);
+}
+
+/* 全局动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 响应式辅助类 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
