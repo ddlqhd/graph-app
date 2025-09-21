@@ -49,16 +49,17 @@ export interface ApiResponse<T> {
 class GraphAPI {
   // 获取图数据
   async getGraphData(limit = 100): Promise<GraphData> {
-    const response = await api.get<any, ApiResponse<GraphData>>(`/api/graph/data?limit=${limit}`)
+    const response = await api.get<any, any>(`/api/graph/data?limit=${limit}`)
     console.log('原始响应:', response)
     console.log('response.data:', response.data)
-    // 根据记忆，需要从 response.data 中提取实际的图数据
+    console.log('response.data.data:', response.data.data)
+    // 根据实际响应结构，数据直接在 response.data 中，而不是 response.data.data
     return response.data
   }
 
   // 获取图统计信息
   async getGraphStats(): Promise<GraphStats> {
-    const response = await api.get<any, ApiResponse<GraphStats>>('/api/graph/stats')
+    const response = await api.get<any, any>('/api/graph/stats')
     return response.data
   }
 
@@ -67,31 +68,31 @@ class GraphAPI {
     const params = new URLSearchParams({ keyword })
     if (type) params.append('type', type)
 
-    const response = await api.get<any, ApiResponse<GraphNode[]>>(`/api/graph/search?${params}`)
+    const response = await api.get<any, any>(`/api/graph/search?${params}`)
     return response.data
   }
 
   // 获取部门子图
   async getDepartmentSubgraph(departmentName: string): Promise<GraphData> {
-    const response = await api.get<any, ApiResponse<GraphData>>(`/api/graph/department/${encodeURIComponent(departmentName)}`)
+    const response = await api.get<any, any>(`/api/graph/department/${encodeURIComponent(departmentName)}`)
     return response.data
   }
 
   // 获取项目图
   async getProjectGraph(projectId: string): Promise<GraphData> {
-    const response = await api.get<any, ApiResponse<GraphData>>(`/api/graph/project/${projectId}`)
+    const response = await api.get<any, any>(`/api/graph/project/${projectId}`)
     return response.data
   }
 
   // 获取节点详情
   async getNodeDetails(nodeId: string): Promise<GraphData> {
-    const response = await api.get<any, ApiResponse<GraphData>>(`/api/graph/node/${nodeId}`)
+    const response = await api.get<any, any>(`/api/graph/node/${nodeId}`)
     return response.data
   }
 
   // 健康检查
   async healthCheck(): Promise<any> {
-    const response = await api.get<any, ApiResponse<any>>('/api/graph/health')
+    const response = await api.get<any, any>('/api/graph/health')
     return response.data
   }
 }

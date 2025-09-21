@@ -27,6 +27,11 @@ const router = createRouter({
       name: 'datatest',
       component: () => import('../views/DataTestView.vue'),
     },
+    {
+      path: '/g6test',
+      name: 'g6test',
+      component: () => import('../views/G6TestView.vue'),
+    },
   ],
 })
 

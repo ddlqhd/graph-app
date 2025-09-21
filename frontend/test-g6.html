@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>G6 Test</title>
+    <script type="module">
+        import * as G6 from '@antv/g6';
+
+        console.log('G6:', G6);
+        console.log('G6.Graph:', G6.Graph);
+        console.log('typeof G6.Graph:', typeof G6.Graph);
+
+        // 尝试创建实例
+        const container = document.getElementById('container');
+        if (container && typeof G6.Graph === 'function') {
+            try {
+                const graph = new G6.Graph({
+                    container: container,
+                    width: 800,
+                    height: 600
+                });
+
+                console.log('Graph instance:', graph);
+                console.log('graph.data method:', typeof graph.data);
+                console.log('graph.read method:', typeof graph.read);
+                console.log('graph.render method:', typeof graph.render);
+                console.log('graph.changeData method:', typeof graph.changeData);
+
+                // 列出所有方法
+                console.log('Graph prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(graph)));
+
+                document.getElementById('result').innerHTML = `
+                    <h3>G6 测试结果:</h3>
+                    <p>G6版本: ${G6.version || 'unknown'}</p>
+                    <p>Graph构造函数: ${typeof G6.Graph}</p>
+                    <p>Graph实例: ${typeof graph}</p>
+                    <p>data方法: ${typeof graph.data}</p>
+                    <p>read方法: ${typeof graph.read}</p>
+                    <p>render方法: ${typeof graph.render}</p>
+                    <p>changeData方法: ${typeof graph.changeData}</p>
+                `;
+
+            } catch (error) {
+                console.error('创建Graph实例失败:', error);
+                document.getElementById('result').innerHTML = `<p style="color: red;">创建Graph实例失败: ${error.message}</p>`;
+            }
+        } else {
+            console.error('G6.Graph不是构造函数或容器不存在');
+            document.getElementById('result').innerHTML = `<p style="color: red;">G6.Graph不是构造函数或容器不存在</p>`;
+        }
+    </script>
+</head>
+<body>
+    <h1>G6 导入测试</h1>
+    <div id="container" style="width: 800px; height: 600px; border: 1px solid #ccc;"></div>
+    <div id="result"></div>
+</body>
+</html>

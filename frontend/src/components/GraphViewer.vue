@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import * as G6 from '@antv/g6'
+import type { GraphData as G6GraphData } from '@antv/g6'
 import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
 import GraphNodePanel from './GraphNodePanel.vue'
@@ -207,7 +208,15 @@ const initGraph = () => {
 
   try {
     console.log('🎆 创建G6实例...')
-    graph = new G6.Graph({
+
+    // 检测G6版本
+    const g6Version = (G6 as any).version || ''
+    const isG6V5 = g6Version.startsWith('5.')
+    console.log(`G6版本: ${g6Version}`)
+    console.log(`是否G6 5.x: ${isG6V5}`)
+
+    // 根据版本配置不同的Graph参数
+    const graphConfig: any = {
       container: graphContainer.value,
       width,
       height,
@@ -259,19 +268,30 @@ const initGraph = () => {
           }
         }
       }
-    })
+    }
+
+    // G6 5.x 版本需要额外的ports配置
+    if (isG6V5) {
+      console.log('为G6 5.x版本添加ports配置')
+      graphConfig.defaultNode.anchorPoints = [
+        [0, 0.5], // 左
+        [1, 0.5], // 右
+        [0.5, 0], // 上
+        [0.5, 1]  // 下
+      ]
+    }
+
+    graph = new G6.Graph(graphConfig)
 
     console.log('✅ G6实例创建成功:', graph)
     console.log('  容器元素:', graphContainer.value)
     console.log('  画布尺寸:', width, 'x', height)
-    console.log('  G6对象:', G6)
-    console.log('  graph方法:', typeof graph.data, typeof graph.render, typeof graph.destroy)
 
-    // 验证 graph 实例的方法
-    if (typeof graph.data !== 'function') {
-      console.error('❌ graph.data 不是一个函数!', graph)
-      throw new Error('Graph instance is invalid')
-    }
+    // 验证关键方法是否存在
+    console.log('🔍 验证关键方法:')
+    console.log('  - data:', typeof graph.data)
+    console.log('  - render:', typeof graph.render)
+    console.log('  - destroy:', typeof graph.destroy)
 
     // 绑定事件
     bindEvents()
@@ -280,6 +300,7 @@ const initGraph = () => {
   } catch (error) {
     console.error('❌ 创建G6实例失败:', error)
     console.error('错误详情:', error.stack)
+    graphStore.setError('图表初始化失败: ' + error.message)
   }
 }
 
@@ -289,19 +310,20 @@ const bindEvents = () => {
 
   // 节点点击事件
   graph.on('node:click', (evt) => {
-    const { itemId } = evt
-    if (itemId) {
-      const node = graphData.value.nodes.find(n => n.id === itemId)
+    const { item } = evt
+    if (item) {
+      const model = item.getModel()
+      const node = graphData.value.nodes.find(n => n.id === model.id)
       if (node) {
         graphStore.selectNode(node)
 
         // 高亮选中的节点
-        graph.setItemState(itemId, 'selected', true)
+        graph.setItemState(item, 'selected', true)
 
         // 清除其他节点的选中状态
-        graph.getAllNodesData().forEach(nodeData => {
-          if (nodeData.id !== itemId) {
-            graph.setItemState(nodeData.id, 'selected', false)
+        graph.getNodes().forEach(n => {
+          if (n !== item) {
+            graph.clearItemStates(n)
           }
         })
       }
@@ -310,19 +332,20 @@ const bindEvents = () => {
 
   // 边点击事件
   graph.on('edge:click', (evt) => {
-    const { itemId } = evt
-    if (itemId) {
-      const edge = graphData.value.edges.find(e => e.id === itemId)
+    const { item } = evt
+    if (item) {
+      const model = item.getModel()
+      const edge = graphData.value.edges.find(e => e.id === model.id)
       if (edge) {
         graphStore.selectEdge(edge)
 
         // 高亮选中的边
-        graph.setItemState(itemId, 'selected', true)
+        graph.setItemState(item, 'selected', true)
 
         // 清除其他边的选中状态
-        graph.getAllEdgesData().forEach(edgeData => {
-          if (edgeData.id !== itemId) {
-            graph.setItemState(edgeData.id, 'selected', false)
+        graph.getEdges().forEach(e => {
+          if (e !== item) {
+            graph.clearItemStates(e)
           }
         })
       }
@@ -334,41 +357,41 @@ const bindEvents = () => {
     graphStore.clearSelection()
 
     // 清除所有高亮状态
-    graph.getAllNodesData().forEach(nodeData => {
-      graph.setItemState(nodeData.id, 'selected', false)
+    graph.getNodes().forEach(node => {
+      graph.clearItemStates(node)
     })
-    graph.getAllEdgesData().forEach(edgeData => {
-      graph.setItemState(edgeData.id, 'selected', false)
+    graph.getEdges().forEach(edge => {
+      graph.clearItemStates(edge)
     })
   })
 
   // 节点悬浮事件
-  graph.on('node:pointerenter', (evt) => {
-    const { itemId } = evt
-    if (itemId && !graph.getItemState(itemId, 'selected')) {
-      graph.setItemState(itemId, 'hover', true)
+  graph.on('node:mouseenter', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.setItemState(item, 'hover', true)
     }
   })
 
-  graph.on('node:pointerleave', (evt) => {
-    const { itemId } = evt
-    if (itemId && !graph.getItemState(itemId, 'selected')) {
-      graph.setItemState(itemId, 'hover', false)
+  graph.on('node:mouseleave', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.setItemState(item, 'hover', false)
     }
   })
 
   // 边悬浮事件
-  graph.on('edge:pointerenter', (evt) => {
-    const { itemId } = evt
-    if (itemId && !graph.getItemState(itemId, 'selected')) {
-      graph.setItemState(itemId, 'hover', true)
+  graph.on('edge:mouseenter', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.setItemState(item, 'hover', true)
     }
   })
 
-  graph.on('edge:pointerleave', (evt) => {
-    const { itemId } = evt
-    if (itemId && !graph.getItemState(itemId, 'selected')) {
-      graph.setItemState(itemId, 'hover', false)
+  graph.on('edge:mouseleave', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.setItemState(item, 'hover', false)
     }
   })
 }
@@ -385,10 +408,16 @@ const convertToG6Data = (data: typeof graphData.value) => {
     return { nodes: [], edges: [] }
   }
 
+  // 检测G6版本
+  const g6Version = (G6 as any).version || ''
+  const isG6V5 = g6Version.startsWith('5.')
+  console.log(`convertToG6Data 检测到G6版本: ${g6Version} (${isG6V5 ? 'v5.x' : 'v4.x'})`)
+
   const g6Data = {
     nodes: data.nodes.map((node, index) => {
       console.log(`  转换节点 ${index + 1}:`, node)
-      return {
+
+      const nodeConfig: any = {
         id: node.id,
         label: node.label,
         size: node.size || 40,
@@ -396,6 +425,19 @@ const convertToG6Data = (data: typeof graphData.value) => {
           fill: node.color || getNodeColor(node.type)
         }
       }
+
+      // G6 5.x 需要显式配置 ports 属性
+      if (isG6V5) {
+        nodeConfig.ports = [
+          { id: 'top', group: 'top' },
+          { id: 'right', group: 'right' },
+          { id: 'bottom', group: 'bottom' },
+          { id: 'left', group: 'left' }
+        ]
+        console.log(`  为G6 5.x节点 ${node.id} 添加ports配置`)
+      }
+
+      return nodeConfig
     }),
     edges: data.edges.map((edge, index) => {
       console.log(`  转换边 ${index + 1}:`, edge)
@@ -421,7 +463,7 @@ const convertToG6Data = (data: typeof graphData.value) => {
 }
 
 // 更新图数据
-const updateGraphData = () => {
+const updateGraphData = async () => {
   console.log('=== updateGraphData 被调用 ===')
   console.log('graphData.value:', graphData.value)
   console.log('graph 实例:', graph)
@@ -435,17 +477,6 @@ const updateGraphData = () => {
       // 初始化后再次尝试更新
       setTimeout(() => updateGraphData(), 100)
     }
-    return
-  }
-
-  // 验证 graph 实例的 data 方法
-  if (typeof graph.data !== 'function') {
-    console.error('❌ graph.data 不是一个函数!', {
-      graph,
-      type: typeof graph,
-      methods: Object.getOwnPropertyNames(graph),
-      proto: Object.getPrototypeOf(graph)
-    })
     return
   }
 
@@ -475,17 +506,46 @@ const updateGraphData = () => {
 
     console.log('🎨 开始更新G6图表数据')
 
-    // 在G6 4.x版本中，使用data和render方法
-    graph.data(g6Data)
-    graph.render()
+    // 检测G6版本
+    const g6Version = (G6 as any).version || ''
+    const isG6V5 = g6Version.startsWith('5.')
+    console.log(`检测到G6版本: ${g6Version} (${isG6V5 ? 'v5.x' : 'v4.x'})`)
+
+    // 清除现有数据再设置新数据
+    console.log('⚙️ 清除现有数据')
+    graph.clear()
+
+    if (isG6V5) {
+      // G6 5.x 使用 setData + render
+      if (typeof (graph as any).setData === 'function') {
+        console.log('使用 G6 5.x setData 方法设置数据')
+        ;(graph as any).setData(g6Data)
+        await graph.render()
+        console.log('✅ G6 5.x setData + render 完成')
+      } else {
+        console.error('❌ G6 5.x setData 方法不可用')
+        return
+      }
+    } else {
+      // G6 4.x 使用 data + render
+      if (typeof graph.data === 'function') {
+        console.log('使用 G6 4.x data 方法设置数据')
+        graph.data(g6Data)
+        graph.render()
+        console.log('✅ G6 4.x data + render 完成')
+      } else {
+        console.error('❌ G6 4.x data 方法不可用')
+        return
+      }
+    }
 
     console.log('✅ 图表渲染完成')
     console.log('🔍 验证渲染结果:')
-    console.log('  - 画布中的节点数:', graph.getAllNodesData().length)
-    console.log('  - 画布中的边数:', graph.getAllEdgesData().length)
+    console.log('  - 画布中的节点数:', graph.getNodes()?.length || 0)
+    console.log('  - 画布中的边数:', graph.getEdges()?.length || 0)
 
     // 适应画布
-    nextTick(() => {
+    nextTick(async () => {
       console.log('📐 执行fitView')
       fitView()
 
@@ -499,13 +559,37 @@ const updateGraphData = () => {
   } catch (error) {
     console.error('❌ 更新图表数据时出错:', error)
     console.error('错误详情:', error.stack)
+    graphStore.setError('图表数据更新失败: ' + error.message)
+
+    // 如果仍然是ports错误，尝试不带边的数据
+    if (error.message && error.message.includes('getPorts')) {
+      console.log('🔄 检测到ports错误，尝试只加载节点数据')
+      try {
+        const nodesOnlyData = {
+          nodes: convertToG6Data(graphData.value).nodes,
+          edges: [] // 不加载边
+        }
+
+        graph.clear()
+        if ((G6 as any).version?.startsWith('5.')) {
+          ;(graph as any).setData(nodesOnlyData)
+          await graph.render()
+        } else {
+          graph.data(nodesOnlyData)
+          graph.render()
+        }
+        console.log('✅ 只加载节点成功')
+      } catch (retryError) {
+        console.error('❌ 只加载节点也失败:', retryError)
+      }
+    }
   }
 }
 
 // 图操作方法
 const fitView = () => {
   if (graph) {
-    graph.fitView()
+    graph.fitView([20, 20, 20, 20])
   }
 }
 
@@ -564,8 +648,7 @@ const changeLayout = (layoutType: string) => {
     }
   }
 
-  graph.setLayout(layoutConfig[layoutType])
-  graph.layout()
+  graph.updateLayout(layoutConfig[layoutType])
 }
 
 // 清除选择
@@ -573,11 +656,11 @@ const clearSelection = () => {
   graphStore.clearSelection()
 
   if (graph) {
-    graph.getAllNodesData().forEach(nodeData => {
-      graph.setItemState(nodeData.id, 'selected', false)
+    graph.getNodes().forEach(node => {
+      graph.clearItemStates(node)
     })
-    graph.getAllEdgesData().forEach(edgeData => {
-      graph.setItemState(edgeData.id, 'selected', false)
+    graph.getEdges().forEach(edge => {
+      graph.clearItemStates(edge)
     })
   }
 }
@@ -608,12 +691,21 @@ const forceUpdateGraph = () => {
 
 // 监听数据变化
 watch(graphData, (newData, oldData) => {
-  console.log('graphData 变化了:')
+  console.log('=== graphData 变化了 ===')
   console.log('旧数据:', oldData)
   console.log('新数据:', newData)
   console.log('新数据节点数:', newData?.nodes?.length || 0)
   console.log('新数据边数:', newData?.edges?.length || 0)
-  updateGraphData()
+  console.log('graph实例是否存在:', !!graph)
+
+  if (graph && newData && newData.nodes && newData.nodes.length > 0) {
+    console.log('✅ 有数据且graph存在，开始更新')
+    updateGraphData()
+  } else if (!graph) {
+    console.log('⚠️ graph实例不存在，等待初始化')
+  } else if (!newData || !newData.nodes || newData.nodes.length === 0) {
+    console.log('⚠️ 数据为空或不存在')
+  }
 }, { deep: true })
 
 // 监听窗口大小变化
@@ -646,14 +738,7 @@ onMounted(() => {
     // 检查初始化结果
     if (graph) {
       console.log('✅ 图表初始化完成')
-
-      // 只有在数据存在时才更新
-      if (graphData.value && graphData.value.nodes && graphData.value.nodes.length > 0) {
-        console.log('📈 数据存在，更新图表')
-        updateGraphData()
-      } else {
-        console.log('⚠️ 数据不存在，等待数据加载')
-      }
+      console.log('⚠️ 等待数据加载和watch响应')
     } else {
       console.error('❌ 图表初始化失败')
     }
