@@ -3,6 +3,37 @@
     <div class="demo-header">
       <h1>GitHub Style Components Demo</h1>
       <p>展示优化后的按钮、输入框、下拉框等组件的GitHub风格设计</p>
+      
+      <!-- 主题切换演示 -->
+      <div class="theme-demo">
+        <h4>主题切换</h4>
+        <div class="theme-buttons">
+          <el-button 
+            :type="currentTheme === 'light' ? 'primary' : 'default'"
+            @click="handleThemeChange('light')"
+          >
+            浅色主题
+          </el-button>
+          <el-button 
+            :type="currentTheme === 'dark' ? 'primary' : 'default'"
+            @click="handleThemeChange('dark')"
+          >
+            深色主题
+          </el-button>
+          <el-button 
+            :type="currentTheme === 'auto' ? 'primary' : 'default'"
+            @click="handleThemeChange('auto')"
+          >
+            跟随系统
+          </el-button>
+        </div>
+        <p class="theme-status">
+          当前主题：{{ getThemeLabel(currentTheme) }} 
+          <span v-if="currentTheme === 'auto'">
+            （实际显示：{{ isDark ? '深色' : '浅色' }}）
+          </span>
+        </p>
+      </div>
     </div>
 
     <div class="demo-sections">
@@ -178,6 +209,10 @@
 import { ref } from 'vue'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useTheme } from '@/composables/useTheme'
+
+// Theme
+const { currentTheme, isDark, setTheme, getThemeLabel } = useTheme()
 
 // 响应式数据
 const basicInput = ref('')
@@ -200,6 +235,11 @@ const form = ref({
 // 方法
 const handleDropdownCommand = (command: string) => {
   ElMessage.info(`点击了 ${command}`)
+}
+
+const handleThemeChange = (theme: 'light' | 'dark' | 'auto') => {
+  setTheme(theme)
+  ElMessage.success(`已切换至${getThemeLabel(theme)}`)
 }
 </script>
 
@@ -226,6 +266,39 @@ const handleDropdownCommand = (command: string) => {
   font-size: 16px;
   color: var(--color-fg-muted);
   line-height: 24px;
+  margin-bottom: var(--space-4);
+}
+
+.theme-demo {
+  background: var(--color-bg-subtle);
+  padding: var(--space-4);
+  border-radius: var(--border-radius-large);
+  border: 1px solid var(--color-border-default);
+  margin-bottom: var(--space-4);
+}
+
+.theme-demo h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-fg-default);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.theme-buttons {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.theme-status {
+  font-size: 14px;
+  color: var(--color-fg-muted);
+  margin: 0;
+  padding: var(--space-2);
+  background: var(--color-bg-default);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-default);
 }
 
 .demo-sections {

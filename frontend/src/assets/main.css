@@ -2,7 +2,7 @@
 
 /* GitHub Design System Variables */
 :root {
-  /* Color primitives */
+  /* Color primitives - Light Theme */
   --color-primary: #0969da;
   --color-primary-hover: #0860ca;
   --color-success: #1a7f37;
@@ -11,19 +11,19 @@
   --color-warning: #bf8700;
   --color-info: #0969da;
 
-  /* Neutral colors */
+  /* Neutral colors - Light Theme */
   --color-fg-default: #1f2328;
   --color-fg-muted: #656d76;
   --color-fg-subtle: #6e7781;
   --color-fg-on-emphasis: #ffffff;
 
-  /* Background colors */
+  /* Background colors - Light Theme */
   --color-bg-default: #ffffff;
   --color-bg-subtle: #f6f8fa;
   --color-bg-muted: #afb8c1;
   --color-bg-emphasis: #1f2328;
 
-  /* Border colors */
+  /* Border colors - Light Theme */
   --color-border-default: #d0d7de;
   --color-border-muted: #d8dee4;
   --color-border-subtle: #afb8c1;
@@ -45,6 +45,42 @@
   --space-4: 24px;
   --space-5: 32px;
   --space-6: 40px;
+}
+
+/* Dark Theme Variables */
+:root[data-theme="dark"],
+.dark {
+  /* Color primitives - Dark Theme */
+  --color-primary: #58a6ff;
+  --color-primary-hover: #79c0ff;
+  --color-success: #3fb950;
+  --color-success-hover: #56d364;
+  --color-danger: #f85149;
+  --color-warning: #d29922;
+  --color-info: #58a6ff;
+
+  /* Neutral colors - Dark Theme */
+  --color-fg-default: #e6edf3;
+  --color-fg-muted: #7d8590;
+  --color-fg-subtle: #6e7681;
+  --color-fg-on-emphasis: #ffffff;
+
+  /* Background colors - Dark Theme */
+  --color-bg-default: #0d1117;
+  --color-bg-subtle: #161b22;
+  --color-bg-muted: #21262d;
+  --color-bg-emphasis: #1f2328;
+
+  /* Border colors - Dark Theme */
+  --color-border-default: #30363d;
+  --color-border-muted: #21262d;
+  --color-border-subtle: #484f58;
+
+  /* Shadows - Dark Theme */
+  --shadow-small: 0 0 transparent;
+  --shadow-medium: 0 3px 6px rgba(0,0,0,0.15);
+  --shadow-large: 0 8px 24px rgba(0,0,0,0.2);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 /* 重置全局样式 */
@@ -120,6 +156,12 @@ html, body {
   background-color: hsla(220, 14%, 93%, 1);
   border-color: var(--color-border-default);
   transition: none;
+}
+
+/* Dark theme active state */
+:root[data-theme="dark"] .el-button--default:active,
+.dark .el-button--default:active {
+  background-color: hsla(215, 14%, 25%, 1);
 }
 
 .el-button--default:focus {

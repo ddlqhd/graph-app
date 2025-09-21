@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
+import { useTheme } from '@/composables/useTheme'
 import { graphAPI } from '@/services/graphService'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import {
   Histogram,
   Refresh,
-  Monitor,
-  Setting
+  Monitor
 } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification } from 'element-plus'
 
@@ -15,8 +16,11 @@ import { ElMessage, ElNotification } from 'element-plus'
 const graphStore = useGraphStore()
 const { loading } = storeToRefs(graphStore)
 
-// 状态
-const currentTheme = ref('light')
+// Theme
+const { initTheme } = useTheme()
+
+// 清理函数
+let cleanupTheme: (() => void) | null = null
 
 // 方法
 const refreshData = async () => {
@@ -48,11 +52,16 @@ const checkHealth = async () => {
   }
 }
 
-const handleThemeCommand = (command: string) => {
-  currentTheme.value = command
-  // 这里可以实现主题切换逻辑
-  ElMessage.info(`已切换至${command === 'light' ? '亮色' : command === 'dark' ? '暗色' : '自动'}主题`)
-}
+// 生命周期
+onMounted(() => {
+  cleanupTheme = initTheme()
+})
+
+onUnmounted(() => {
+  if (cleanupTheme) {
+    cleanupTheme()
+  }
+})
 </script>
 
 <template>
@@ -96,16 +105,7 @@ const handleThemeCommand = (command: string) => {
               </el-button>
             </el-tooltip>
 
-            <el-dropdown @command="handleThemeCommand">
-              <el-button type="text" :icon="Setting" />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="light">亮色主题</el-dropdown-item>
-                  <el-dropdown-item command="dark">暗色主题</el-dropdown-item>
-                  <el-dropdown-item command="auto">跟随系统</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <ThemeToggle />
           </div>
         </div>
       </el-header>
@@ -161,6 +161,13 @@ const handleThemeCommand = (command: string) => {
   z-index: 1000;
 }
 
+/* Dark theme header adjustments */
+:root[data-theme="dark"] .app-header,
+.dark .app-header {
+  box-shadow: inset 0 -1px 0 rgba(48, 54, 61, 0.5);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
 .header-content {
   display: flex;
   justify-content: space-between;
@@ -201,6 +208,12 @@ const handleThemeCommand = (command: string) => {
   opacity: 0.9;
 }
 
+/* Dark theme subtitle color adjustment */
+:root[data-theme="dark"] .app-subtitle,
+.dark .app-subtitle {
+  color: rgba(230, 237, 243, 0.8);
+}
+
 /* GitHub-style Header Actions */
 .header-actions {
   display: flex;
@@ -224,6 +237,17 @@ const handleThemeCommand = (command: string) => {
   overflow: hidden;
 }
 
+/* Dark theme button border */
+:root[data-theme="dark"] .header-actions .el-button,
+.dark .header-actions .el-button {
+  border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+:root[data-theme="dark"] .header-actions .el-button:hover,
+.dark .header-actions .el-button:hover {
+  border-color: rgba(48, 54, 61, 0.8);
+}
+
 .header-actions .el-button::before {
   content: '';
   position: absolute;
@@ -234,6 +258,12 @@ const handleThemeCommand = (command: string) => {
   background: rgba(255, 255, 255, 0.1);
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+/* Dark theme button hover effect */
+:root[data-theme="dark"] .header-actions .el-button::before,
+.dark .header-actions .el-button::before {
+  background: rgba(230, 237, 243, 0.1);
 }
 
 .header-actions .el-button:hover::before {
