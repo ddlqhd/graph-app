@@ -1,8 +1,8 @@
 <template>
   <div class="theme-toggle">
     <el-dropdown @command="handleThemeCommand" trigger="click">
-      <el-button 
-        type="text" 
+      <el-button
+        type="text"
         class="theme-button"
         :title="`当前主题: ${getThemeLabel(currentTheme)}`"
       >
@@ -12,7 +12,7 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu class="theme-dropdown">
-          <el-dropdown-item 
+          <el-dropdown-item
             command="light"
             :class="{ 'is-active': currentTheme === 'light' }"
           >
@@ -26,8 +26,8 @@
               </el-icon>
             </div>
           </el-dropdown-item>
-          
-          <el-dropdown-item 
+
+          <el-dropdown-item
             command="dark"
             :class="{ 'is-active': currentTheme === 'dark' }"
           >
@@ -41,8 +41,8 @@
               </el-icon>
             </div>
           </el-dropdown-item>
-          
-          <el-dropdown-item 
+
+          <el-dropdown-item
             command="auto"
             :class="{ 'is-active': currentTheme === 'auto' }"
           >

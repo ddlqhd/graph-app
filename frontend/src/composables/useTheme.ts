@@ -27,7 +27,7 @@ const getSystemTheme = (): 'light' | 'dark' => {
 // 应用主题到document
 const applyTheme = (theme: 'light' | 'dark') => {
   const root = document.documentElement
-  
+
   if (theme === 'dark') {
     root.setAttribute('data-theme', 'dark')
     root.classList.add('dark')
@@ -42,13 +42,13 @@ const applyTheme = (theme: 'light' | 'dark') => {
 // 更新实际应用的主题
 const updateAppliedTheme = () => {
   let appliedTheme: 'light' | 'dark'
-  
+
   if (currentTheme.value === 'auto') {
     appliedTheme = getSystemTheme()
   } else {
     appliedTheme = currentTheme.value
   }
-  
+
   applyTheme(appliedTheme)
 }
 
@@ -80,15 +80,15 @@ const getThemeLabel = (theme: Theme): string => {
 // 监听系统主题变化
 const setupSystemThemeListener = () => {
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  
+
   const handleSystemThemeChange = () => {
     if (currentTheme.value === 'auto') {
       updateAppliedTheme()
     }
   }
-  
+
   mediaQuery.addEventListener('change', handleSystemThemeChange)
-  
+
   return () => {
     mediaQuery.removeEventListener('change', handleSystemThemeChange)
   }

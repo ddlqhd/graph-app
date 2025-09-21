@@ -3,24 +3,24 @@
     <div class="demo-header">
       <h1>GitHub Style Components Demo</h1>
       <p>展示优化后的按钮、输入框、下拉框等组件的GitHub风格设计</p>
-      
+
       <!-- 主题切换演示 -->
       <div class="theme-demo">
         <h4>主题切换</h4>
         <div class="theme-buttons">
-          <el-button 
+          <el-button
             :type="currentTheme === 'light' ? 'primary' : 'default'"
             @click="handleThemeChange('light')"
           >
             浅色主题
           </el-button>
-          <el-button 
+          <el-button
             :type="currentTheme === 'dark' ? 'primary' : 'default'"
             @click="handleThemeChange('dark')"
           >
             深色主题
           </el-button>
-          <el-button 
+          <el-button
             :type="currentTheme === 'auto' ? 'primary' : 'default'"
             @click="handleThemeChange('auto')"
           >
@@ -28,7 +28,7 @@
           </el-button>
         </div>
         <p class="theme-status">
-          当前主题：{{ getThemeLabel(currentTheme) }} 
+          当前主题：{{ getThemeLabel(currentTheme) }}
           <span v-if="currentTheme === 'auto'">
             （实际显示：{{ isDark ? '深色' : '浅色' }}）
           </span>

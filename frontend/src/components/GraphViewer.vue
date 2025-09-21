@@ -12,7 +12,7 @@
       </div>
 
       <!-- 调试信息 -->
-      <div class="debug-info">
+      <div v-if="false" class="debug-info">
         <p>节点数: {{ graphData.nodes?.length || 0 }}</p>
         <p>边数: {{ graphData.edges?.length || 0 }}</p>
         <p>加载状态: {{ loading ? '加载中' : '已完成' }}</p>
@@ -295,6 +295,15 @@ const initGraph = () => {
 
     // 绑定事件
     bindEvents()
+    
+    // 绑定布局完成事件
+    graph.on('afterlayout', () => {
+      console.log('🎆 布局完成事件触发')
+      setTimeout(() => {
+        console.log('🎯 布局完成后自动适应画布')
+        fitView()
+      }, 100)
+    })
     console.log('✅ 事件绑定完成')
 
   } catch (error) {
@@ -545,16 +554,22 @@ const updateGraphData = async () => {
     console.log('  - 画布中的边数:', graph.getEdges()?.length || 0)
 
     // 适应画布
-    nextTick(async () => {
-      console.log('📐 执行fitView')
-      fitView()
-
-      // 再次验证
+    nextTick(() => {
+      // 等待渲染和布局完成后再适应画布
       setTimeout(() => {
-        console.log('🔍 最终验证:')
-        console.log('  - DOM中的SVG元素:', graphContainer.value?.querySelector('svg'))
-        console.log('  - SVG中的元素数量:', graphContainer.value?.querySelectorAll('svg *').length)
-      }, 500)
+        console.log('🎯 数据筛选后自动适应画布')
+        fitView()
+        
+        // 再次验证并尝试第二次适应
+        setTimeout(() => {
+          console.log('🔄 第二次适应尝试')
+          fitView()
+          
+          console.log('🔍 最终验证:')
+          console.log('  - DOM中的SVG元素:', graphContainer.value?.querySelector('svg'))
+          console.log('  - SVG中的元素数量:', graphContainer.value?.querySelectorAll('svg *').length)
+        }, 1000) // 第二次适应，确保布局完成
+      }, 300) // 等待初始渲染完成
     })
   } catch (error) {
     console.error('❌ 更新图表数据时出错:', error)
@@ -589,7 +604,22 @@ const updateGraphData = async () => {
 // 图操作方法
 const fitView = () => {
   if (graph) {
-    graph.fitView([20, 20, 20, 20])
+    try {
+      // 先检查是否有节点
+      const nodes = graph.getNodes()
+      if (nodes && nodes.length > 0) {
+        console.log('🎯 执行fitView，节点数:', nodes.length)
+        // 使用适当的边距
+        graph.fitView(20)
+        console.log('✅ fitView 执行完成')
+      } else {
+        console.log('⚠️ 没有节点，跳过fitView')
+      }
+    } catch (error) {
+      console.error('❌ fitView 执行失败:', error)
+    }
+  } else {
+    console.log('⚠️ graph实例不存在，无法执行fitView')
   }
 }
 
@@ -649,6 +679,12 @@ const changeLayout = (layoutType: string) => {
   }
 
   graph.updateLayout(layoutConfig[layoutType])
+  
+  // 布局更改后自动适应画布
+  setTimeout(() => {
+    console.log('🎯 布局更改后自动适应画布')
+    fitView()
+  }, 800) // 等待布局动画完成
 }
 
 // 清除选择
