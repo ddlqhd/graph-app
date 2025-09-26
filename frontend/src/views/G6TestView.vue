@@ -26,12 +26,11 @@ onMounted(async () => {
 
   try {
     const g6Version = (G6 as any).version || ''
-    const isG6V5 = g6Version.startsWith('5.')
 
     addResult(`G6对象: ${typeof G6}`)
     addResult(`G6.Graph: ${typeof G6.Graph}`)
     addResult(`G6版本: ${g6Version}`)
-    addResult(`检测到G6版本: ${isG6V5 ? 'v5.x' : 'v4.x'}`)
+    addResult(`G6版本检测完成`)
 
     if (typeof G6.Graph !== 'function') {
       addResult('❌ G6.Graph不是构造函数')
@@ -71,24 +70,13 @@ onMounted(async () => {
 
     addResult('尝试加载最简化数据...')
 
-    if (isG6V5) {
-      if (typeof (graph as any).setData === 'function') {
-        addResult('使用G6 5.x setData方法')
-        ;(graph as any).setData(simpleData)
-        await graph.render()
-        addResult('✅ 简化数据加载成功')
-      } else {
-        addResult('❌ G6 5.x setData方法不可用')
-      }
+    if (typeof graph.data === 'function') {
+      addResult('使用G6 4.x data方法')
+      graph.data(simpleData)
+      graph.render()
+      addResult('✅ 简化数据加载成功')
     } else {
-      if (typeof graph.data === 'function') {
-        addResult('使用G6 4.x data方法')
-        graph.data(simpleData)
-        graph.render()
-        addResult('✅ 简化数据加载成功')
-      } else {
-        addResult('❌ G6 4.x data方法不可用')
-      }
+      addResult('❌ G6 4.x data方法不可用')
     }
 
     // 验证渲染结果

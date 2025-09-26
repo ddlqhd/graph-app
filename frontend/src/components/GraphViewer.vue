@@ -213,13 +213,7 @@ const initGraph = () => {
   try {
     console.log('🎆 创建G6实例...')
 
-    // 检测G6版本
-    const g6Version = (G6 as any).version || ''
-    const isG6V5 = g6Version.startsWith('5.')
-    console.log(`G6版本: ${g6Version}`)
-    console.log(`是否G6 5.x: ${isG6V5}`)
-
-    // 根据版本配置不同的Graph参数
+    // 配置 Graph 参数
     const graphConfig: any = {
       container: graphContainer.value,
       width,
@@ -274,16 +268,7 @@ const initGraph = () => {
       }
     }
 
-    // G6 5.x 版本需要额外的ports配置
-    if (isG6V5) {
-      console.log('为G6 5.x版本添加ports配置')
-      graphConfig.defaultNode.anchorPoints = [
-        [0, 0.5], // 左
-        [1, 0.5], // 右
-        [0.5, 0], // 上
-        [0.5, 1]  // 下
-      ]
-    }
+    
 
     graph = new G6.Graph(graphConfig)
 
@@ -421,11 +406,6 @@ const convertToG6Data = (data: typeof graphData.value) => {
     return { nodes: [], edges: [] }
   }
 
-  // 检测G6版本
-  const g6Version = (G6 as any).version || ''
-  const isG6V5 = g6Version.startsWith('5.')
-  console.log(`convertToG6Data 检测到G6版本: ${g6Version} (${isG6V5 ? 'v5.x' : 'v4.x'})`)
-
   const g6Data = {
     nodes: [],
     edges: []
@@ -446,17 +426,6 @@ const convertToG6Data = (data: typeof graphData.value) => {
       style: {
         fill: node.color || getNodeColor(node.type)
       }
-    }
-
-    // G6 5.x 需要显式配置 ports 属性
-    if (isG6V5) {
-      nodeConfig.ports = [
-        { id: 'top', group: 'top' },
-        { id: 'right', group: 'right' },
-        { id: 'bottom', group: 'bottom' },
-        { id: 'left', group: 'left' }
-      ]
-      console.log(`  为G6 5.x节点 ${node.id} 添加ports配置`)
     }
 
     if (nodeMap.has(node.id)) {
@@ -554,11 +523,6 @@ const updateGraphData = async () => {
 
       console.log('🎨 开始更新G6图表数据')
 
-      // 检测G6版本
-      const g6Version = (G6 as any).version || ''
-      const isG6V5 = g6Version.startsWith('5.')
-      console.log(`检测到G6版本: ${g6Version} (${isG6V5 ? 'v5.x' : 'v4.x'})`)
-
       // 先完全清除现有数据和状态，解决ID重复问题
       console.log('🧹 完全清除现有数据')
       
@@ -604,79 +568,66 @@ const updateGraphData = async () => {
       // 重新初始化图表状态
       graph.set('animate', false) // 禁用动画避免干扰
 
-      if (isG6V5) {
-        // G6 5.x 使用 setData + render
-        if (typeof (graph as any).setData === 'function') {
-          console.log('使用 G6 5.x setData 方法设置数据')
-          ;(graph as any).setData(g6Data)
-          await graph.render()
-          console.log('✅ G6 5.x setData + render 完成')
-        } else {
-          console.error('❌ G6 5.x setData 方法不可用')
-          return
+      // G6 4.x 使用 data + render
+      if (typeof graph.data === 'function') {
+        console.log('使用 G6 4.x data 方法设置数据')
+
+        // 验证数据中ID的唯一性
+        const nodeIds = new Set()
+        const edgeIds = new Set()
+        const duplicateNodes: string[] = []
+        const duplicateEdges: string[] = []
+
+        g6Data.nodes.forEach(node => {
+          if (nodeIds.has(node.id)) {
+            duplicateNodes.push(node.id)
+          } else {
+            nodeIds.add(node.id)
+          }
+        })
+
+        g6Data.edges.forEach(edge => {
+          if (edgeIds.has(edge.id)) {
+            duplicateEdges.push(edge.id)
+          } else {
+            edgeIds.add(edge.id)
+          }
+        })
+
+        if (duplicateNodes.length > 0) {
+          console.warn('⚠️ 发现重复节点ID:', duplicateNodes)
         }
+        if (duplicateEdges.length > 0) {
+          console.warn('⚠️ 发现重复边ID:', duplicateEdges)
+        }
+
+        // 等待更长时间确保清理完成
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // 再次验证清理结果
+        const remainingNodes = graph.getNodes().length
+        const remainingEdges = graph.getEdges().length
+        console.log(`设置新数据前再次检查: ${remainingNodes}个节点, ${remainingEdges}条边`)
+        
+        if (remainingNodes > 0 || remainingEdges > 0) {
+          console.warn('⚠️ 检测到未清理干净的元素，再次清理')
+          graph.clear()
+          await new Promise(resolve => setTimeout(resolve, 50))
+        }
+
+        // 设置数据
+        console.log('📊 开始设置新数据...')
+        graph.data(g6Data)
+        
+        // 等待一个周期再渲染
+        await nextTick()
+        
+        console.log('🎨 开始渲染...')
+        graph.render()
+        console.log('✅ G6 4.x data + render 完成')
       } else {
-        // G6 4.x 使用 data + render
-        if (typeof graph.data === 'function') {
-          console.log('使用 G6 4.x data 方法设置数据')
-
-          // 验证数据中ID的唯一性
-          const nodeIds = new Set()
-          const edgeIds = new Set()
-          const duplicateNodes: string[] = []
-          const duplicateEdges: string[] = []
-
-          g6Data.nodes.forEach(node => {
-            if (nodeIds.has(node.id)) {
-              duplicateNodes.push(node.id)
-            } else {
-              nodeIds.add(node.id)
-            }
-          })
-
-          g6Data.edges.forEach(edge => {
-            if (edgeIds.has(edge.id)) {
-              duplicateEdges.push(edge.id)
-            } else {
-              edgeIds.add(edge.id)
-            }
-          })
-
-          if (duplicateNodes.length > 0) {
-            console.warn('⚠️ 发现重复节点ID:', duplicateNodes)
-          }
-          if (duplicateEdges.length > 0) {
-            console.warn('⚠️ 发现重复边ID:', duplicateEdges)
-          }
-
-          // 等待更长时间确保清理完成
-          await new Promise(resolve => setTimeout(resolve, 100))
-          
-          // 再次验证清理结果
-          const remainingNodes = graph.getNodes().length
-          const remainingEdges = graph.getEdges().length
-          console.log(`设置新数据前再次检查: ${remainingNodes}个节点, ${remainingEdges}条边`)
-          
-          if (remainingNodes > 0 || remainingEdges > 0) {
-            console.warn('⚠️ 检测到未清理干净的元素，再次清理')
-            graph.clear()
-            await new Promise(resolve => setTimeout(resolve, 50))
-          }
-
-          // 设置数据
-          console.log('📊 开始设置新数据...')
-          graph.data(g6Data)
-          
-          // 等待一个周期再渲染
-          await nextTick()
-          
-          console.log('🎨 开始渲染...')
-          graph.render()
-          console.log('✅ G6 4.x data + render 完成')
-        } else {
-          console.error('❌ G6 4.x data 方法不可用')
-          return
-        }
+        console.error('❌ G6 4.x data 方法不可用')
+        return
       }
 
       // 重新启用动画
@@ -720,13 +671,8 @@ const updateGraphData = async () => {
           }
 
           graph.clear()
-          if ((G6 as any).version?.startsWith('5.')) {
-            ;(graph as any).setData(nodesOnlyData)
-            await graph.render()
-          } else {
-            graph.data(nodesOnlyData)
-            graph.render()
-          }
+          graph.data(nodesOnlyData)
+          graph.render()
           console.log('✅ 只加载节点成功')
         } catch (retryError) {
           console.error('❌ 只加载节点也失败:', retryError)
@@ -900,7 +846,7 @@ watch(graphData, (newData, oldData) => {
 const handleResize = () => {
   if (graph && props.autoResize && graphContainer.value) {
     const { clientWidth, clientHeight } = graphContainer.value
-    graph.setSize(clientWidth, clientHeight)
+    graph.changeSize(clientWidth, clientHeight)
   }
 }
 
