@@ -27,9 +27,11 @@ class GraphModel {
 
         // 添加起始节点
         if (startNode && !nodes.has(startNode.identity.toString())) {
+          const nodeLabel = startNode.properties.device_name || startNode.properties.port_name || 
+                           startNode.properties.name || startNode.properties.id || 'Unknown';
           nodes.set(startNode.identity.toString(), {
             id: startNode.identity.toString(),
-            label: startNode.properties.name || startNode.properties.id || 'Unknown',
+            label: nodeLabel,
             type: startNode.labels[0] || 'Unknown',
             properties: startNode.properties,
             ...this.getNodeStyle(startNode.labels[0])
@@ -38,10 +40,12 @@ class GraphModel {
 
         // 添加关系和目标节点
         if (relationship && endNode) {
+          const nodeLabel = endNode.properties.device_name || endNode.properties.port_name || 
+                           endNode.properties.name || endNode.properties.id || 'Unknown';
           if (!nodes.has(endNode.identity.toString())) {
             nodes.set(endNode.identity.toString(), {
               id: endNode.identity.toString(),
-              label: endNode.properties.name || endNode.properties.id || 'Unknown',
+              label: nodeLabel,
               type: endNode.labels[0] || 'Unknown',
               properties: endNode.properties,
               ...this.getNodeStyle(endNode.labels[0])
@@ -73,40 +77,22 @@ class GraphModel {
   // 根据节点类型获取样式
   getNodeStyle(nodeType) {
     const styleMap = {
-      'Person': {
-        color: '#FF6B6B',
-        size: 40,
-        icon: {
-          type: 'font',
-          value: '👤',
-          size: 20
-        }
-      },
-      'Department': {
-        color: '#4ECDC4',
-        size: 50,
-        icon: {
-          type: 'font',
-          value: '🏢',
-          size: 24
-        }
-      },
-      'Project': {
-        color: '#45B7D1',
+      'Device': {
+        color: '#3498DB',
         size: 45,
         icon: {
           type: 'font',
-          value: '📋',
+          value: '🖥️',
           size: 22
         }
       },
-      'Skill': {
-        color: '#F7DC6F',
-        size: 35,
+      'Port': {
+        color: '#E74C3C',
+        size: 30,
         icon: {
           type: 'font',
-          value: '⚡',
-          size: 18
+          value: '🔌',
+          size: 16
         }
       }
     };
@@ -125,46 +111,18 @@ class GraphModel {
   // 根据关系类型获取样式
   getEdgeStyle(edgeType) {
     const styleMap = {
-      'MANAGES': {
-        color: '#E74C3C',
-        style: {
-          lineWidth: 3,
-          lineDash: [0]
-        }
-      },
-      'WORKS_IN': {
+      'HAS_PORT': {
         color: '#3498DB',
         style: {
           lineWidth: 2,
           lineDash: [0]
         }
       },
-      'PARTICIPATES_IN': {
+      'CONNECTS_TO': {
         color: '#2ECC71',
         style: {
-          lineWidth: 2,
-          lineDash: [5, 5]
-        }
-      },
-      'HAS_SKILL': {
-        color: '#F39C12',
-        style: {
           lineWidth: 1,
-          lineDash: [2, 2]
-        }
-      },
-      'COLLABORATES_WITH': {
-        color: '#9B59B6',
-        style: {
-          lineWidth: 2,
-          lineDash: [0]
-        }
-      },
-      'OVERSEES': {
-        color: '#E67E22',
-        style: {
-          lineWidth: 3,
-          lineDash: [10, 5]
+          lineDash: [5, 5]
         }
       }
     };
@@ -178,40 +136,37 @@ class GraphModel {
     };
   }
 
-  // 根据部门获取子图
-  async getSubgraphByDepartment(departmentName) {
+  // 根据数据中心获取子图
+  async getSubgraphByDataCenter(dcName) {
     const query = `
-      MATCH (d:Department {name: $departmentName})
-      MATCH (p:Person)-[:WORKS_IN]->(d)
-      OPTIONAL MATCH (p)-[r]-(other)
-      RETURN p, r, other, d
+      MATCH (d:Device {dc: $dcName})
+      OPTIONAL MATCH (d)-[r]-(other)
+      RETURN d, r, other
     `;
 
     try {
-      const result = await this.db.executeReadQuery(query, { departmentName });
+      const result = await this.db.executeReadQuery(query, { dcName });
       return this.processGraphResult(result);
     } catch (error) {
-      console.error('获取部门子图失败:', error);
-      throw new Error('获取部门子图失败: ' + error.message);
+      console.error('获取数据中心子图失败:', error);
+      throw new Error('获取数据中心子图失败: ' + error.message);
     }
   }
 
-  // 根据项目获取相关图数据
-  async getProjectGraph(projectId) {
+  // 根据设备获取相关图数据
+  async getDeviceGraph(deviceName) {
     const query = `
-      MATCH (proj:Project {id: $projectId})
-      MATCH (p:Person)-[:PARTICIPATES_IN]->(proj)
-      OPTIONAL MATCH (p)-[r]-(other)
-      WHERE other:Person OR other:Department OR other:Skill
-      RETURN p, r, other, proj
+      MATCH (d:Device {device_name: $deviceName})
+      OPTIONAL MATCH (d)-[r]-(other)
+      RETURN d, r, other
     `;
 
     try {
-      const result = await this.db.executeReadQuery(query, { projectId });
+      const result = await this.db.executeReadQuery(query, { deviceName });
       return this.processGraphResult(result);
     } catch (error) {
-      console.error('获取项目图数据失败:', error);
-      throw new Error('获取项目图数据失败: ' + error.message);
+      console.error('获取设备图数据失败:', error);
+      throw new Error('获取设备图数据失败: ' + error.message);
     }
   }
 
@@ -219,7 +174,7 @@ class GraphModel {
   async searchNodes(keyword, nodeType = null) {
     let query = `
       MATCH (n)
-      WHERE n.name CONTAINS $keyword
+      WHERE n.device_name CONTAINS $keyword OR n.port_name CONTAINS $keyword OR n.name CONTAINS $keyword
     `;
 
     if (nodeType) {
@@ -236,9 +191,11 @@ class GraphModel {
 
       return result.records.map(record => {
         const node = record.get('n');
+        const nodeLabel = node.properties.device_name || node.properties.port_name || 
+                         node.properties.name || node.properties.id;
         return {
           id: node.identity.toString(),
-          label: node.properties.name || node.properties.id,
+          label: nodeLabel,
           type: node.labels[0],
           properties: node.properties,
           ...this.getNodeStyle(node.labels[0])
@@ -311,9 +268,11 @@ class GraphModel {
         if (value && value.labels) { // 这是一个节点
           const nodeId = value.identity.toString();
           if (!nodes.has(nodeId)) {
+            const nodeLabel = value.properties.device_name || value.properties.port_name || 
+                             value.properties.name || value.properties.id || 'Unknown';
             nodes.set(nodeId, {
               id: nodeId,
-              label: value.properties.name || value.properties.id || 'Unknown',
+              label: nodeLabel,
               type: value.labels[0] || 'Unknown',
               properties: value.properties,
               ...this.getNodeStyle(value.labels[0])

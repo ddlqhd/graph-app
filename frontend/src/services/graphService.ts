@@ -49,18 +49,20 @@ export interface ApiResponse<T> {
 class GraphAPI {
   // 获取图数据
   async getGraphData(limit = 100): Promise<GraphData> {
-    const response = await api.get<any, any>(`/api/graph/data?limit=${limit}`)
-    console.log('原始响应:', response)
-    console.log('response.data:', response.data)
-    console.log('response.data.data:', response.data.data)
-    // 根据实际响应结构，数据直接在 response.data 中，而不是 response.data.data
-    return response.data
+    try {
+      const data = await api.get<GraphData, GraphData>(`/api/graph/data?limit=${limit}`)
+      console.log('API Response data:', data)
+      return data
+    } catch (error) {
+      console.error('Error fetching graph data:', error)
+      throw error
+    }
   }
 
   // 获取图统计信息
   async getGraphStats(): Promise<GraphStats> {
-    const response = await api.get<any, any>('/api/graph/stats')
-    return response.data
+    const data = await api.get<GraphStats, GraphStats>('/api/graph/stats')
+    return data
   }
 
   // 搜索节点
@@ -68,32 +70,32 @@ class GraphAPI {
     const params = new URLSearchParams({ keyword })
     if (type) params.append('type', type)
 
-    const response = await api.get<any, any>(`/api/graph/search?${params}`)
-    return response.data
+    const data = await api.get<GraphNode[], GraphNode[]>(`/api/graph/search?${params}`)
+    return data
   }
 
-  // 获取部门子图
-  async getDepartmentSubgraph(departmentName: string): Promise<GraphData> {
-    const response = await api.get<any, any>(`/api/graph/department/${encodeURIComponent(departmentName)}`)
-    return response.data
+  // 获取数据中心子图
+  async getDataCenterSubgraph(dcName: string): Promise<GraphData> {
+    const data = await api.get<GraphData, GraphData>(`/api/graph/datacenter/${encodeURIComponent(dcName)}`)
+    return data
   }
 
-  // 获取项目图
-  async getProjectGraph(projectId: string): Promise<GraphData> {
-    const response = await api.get<any, any>(`/api/graph/project/${projectId}`)
-    return response.data
+  // 获取设备图
+  async getDeviceGraph(deviceName: string): Promise<GraphData> {
+    const data = await api.get<GraphData, GraphData>(`/api/graph/device/${deviceName}`)
+    return data
   }
 
   // 获取节点详情
   async getNodeDetails(nodeId: string): Promise<GraphData> {
-    const response = await api.get<any, any>(`/api/graph/node/${nodeId}`)
-    return response.data
+    const data = await api.get<GraphData, GraphData>(`/api/graph/node/${nodeId}`)
+    return data
   }
 
   // 健康检查
   async healthCheck(): Promise<any> {
-    const response = await api.get<any, any>('/api/graph/health')
-    return response.data
+    const data = await api.get<any, any>('/api/graph/health')
+    return data
   }
 }
 

@@ -45,17 +45,17 @@
           </el-button>
           <el-button
             size="small"
-            :type="currentView === 'department' ? 'primary' : 'default'"
-            @click="showDepartmentDialog"
+            :type="currentView === 'datacenter' ? 'primary' : 'default'"
+            @click="showDataCenterDialog"
           >
-            按部门
+            按数据中心
           </el-button>
           <el-button
             size="small"
-            :type="currentView === 'project' ? 'primary' : 'default'"
-            @click="showProjectDialog"
+            :type="currentView === 'device' ? 'primary' : 'default'"
+            @click="showDeviceDialog"
           >
-            按项目
+            按设备
           </el-button>
         </div>
       </div>
@@ -148,44 +148,44 @@
       </div>
     </el-card>
 
-    <!-- 部门选择对话框 -->
+    <!-- 数据中心选择对话框 -->
     <el-dialog
-      v-model="departmentDialogVisible"
-      title="选择部门"
+      v-model="dataCenterDialogVisible"
+      title="选择数据中心"
       width="400px"
     >
       <el-select
-        v-model="selectedDepartment"
-        placeholder="请选择部门"
+        v-model="selectedDataCenter"
+        placeholder="请选择数据中心"
         style="width: 100%"
-        @change="loadDepartmentData"
+        @change="loadDataCenterData"
       >
         <el-option
-          v-for="dept in departments"
-          :key="dept"
-          :label="dept"
-          :value="dept"
+          v-for="dc in dataCenters"
+          :key="dc"
+          :label="dc"
+          :value="dc"
         />
       </el-select>
     </el-dialog>
 
-    <!-- 项目选择对话框 -->
+    <!-- 设备选择对话框 -->
     <el-dialog
-      v-model="projectDialogVisible"
-      title="选择项目"
+      v-model="deviceDialogVisible"
+      title="选择设备"
       width="400px"
     >
       <el-select
-        v-model="selectedProject"
-        placeholder="请选择项目"
+        v-model="selectedDevice"
+        placeholder="请选择设备"
         style="width: 100%"
-        @change="loadProjectData"
+        @change="loadDeviceData"
       >
         <el-option
-          v-for="project in projects"
-          :key="project"
-          :label="project"
-          :value="project"
+          v-for="device in devices"
+          :key="device"
+          :label="device"
+          :value="device"
         />
       </el-select>
     </el-dialog>
@@ -212,21 +212,21 @@ const {
 // 响应式数据
 const searchKeyword = ref('')
 const searchType = ref('')
-const departmentDialogVisible = ref(false)
-const projectDialogVisible = ref(false)
-const selectedDepartment = ref('')
-const selectedProject = ref('')
+const dataCenterDialogVisible = ref(false)
+const deviceDialogVisible = ref(false)
+const selectedDataCenter = ref('')
+const selectedDevice = ref('')
 
-// 预设的部门和项目列表
-const departments = ref(['技术部', '财务部', '人事部', '总裁办'])
-const projects = ref(['web_project', 'api_project', 'mobile_project'])
+// 预设的数据中心和设备列表 - 这些应该从后端获取
+const dataCenters = ref(['DC-West', 'DC-East', 'DC-North', 'DC-South', 'DC-Cloud1', 'DC-Cloud2'])
+const devices = ref(['Device_001', 'Device_002', 'Device_003', 'Device_004', 'Device_005'])
 
 // 计算属性
 const getCurrentViewTitle = () => {
-  if (currentView.value === 'department') {
-    return `部门: ${currentFilter.value}`
-  } else if (currentView.value === 'project') {
-    return `项目: ${currentFilter.value}`
+  if (currentView.value === 'datacenter') {
+    return `数据中心: ${currentFilter.value}`
+  } else if (currentView.value === 'device') {
+    return `设备: ${currentFilter.value}`
   }
   return '全部数据'
 }
@@ -234,10 +234,8 @@ const getCurrentViewTitle = () => {
 // 获取标签类型
 const getTagType = (nodeType: string) => {
   const typeMap: Record<string, any> = {
-    'Person': 'success',
-    'Department': 'primary',
-    'Project': 'warning',
-    'Skill': 'info'
+    'Device': 'primary',
+    'Port': 'success'
   }
   return typeMap[nodeType] || 'default'
 }
@@ -266,25 +264,25 @@ const loadAllData = async () => {
   await graphStore.loadGraphData()
 }
 
-const showDepartmentDialog = () => {
-  departmentDialogVisible.value = true
+const showDataCenterDialog = () => {
+  dataCenterDialogVisible.value = true
 }
 
-const showProjectDialog = () => {
-  projectDialogVisible.value = true
+const showDeviceDialog = () => {
+  deviceDialogVisible.value = true
 }
 
-const loadDepartmentData = async () => {
-  if (selectedDepartment.value) {
-    await graphStore.loadDepartmentSubgraph(selectedDepartment.value)
-    departmentDialogVisible.value = false
+const loadDataCenterData = async () => {
+  if (selectedDataCenter.value) {
+    await graphStore.loadDataCenterSubgraph(selectedDataCenter.value)
+    dataCenterDialogVisible.value = false
   }
 }
 
-const loadProjectData = async () => {
-  if (selectedProject.value) {
-    await graphStore.loadProjectGraph(selectedProject.value)
-    projectDialogVisible.value = false
+const loadDeviceData = async () => {
+  if (selectedDevice.value) {
+    await graphStore.loadDeviceGraph(selectedDevice.value)
+    deviceDialogVisible.value = false
   }
 }
 

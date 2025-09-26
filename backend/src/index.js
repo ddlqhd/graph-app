@@ -47,8 +47,8 @@ app.get('/', (req, res) => {
         stats: '/api/graph/stats',
         search: '/api/graph/search',
         health: '/api/graph/health',
-        department: '/api/graph/department/:departmentName',
-        project: '/api/graph/project/:projectId',
+        datacenter: '/api/graph/datacenter/:dcName',
+        device: '/api/graph/device/:deviceName',
         node: '/api/graph/node/:nodeId'
       }
     }
@@ -66,8 +66,8 @@ app.get('/api', (req, res) => {
         'GET /api/graph/stats - 获取图统计信息',
         'GET /api/graph/search?keyword=xxx - 搜索节点',
         'GET /api/graph/health - 健康检查',
-        'GET /api/graph/department/:departmentName - 获取部门子图',
-        'GET /api/graph/project/:projectId - 获取项目图',
+        'GET /api/graph/datacenter/:dcName - 获取数据中心子图',
+        'GET /api/graph/device/:deviceName - 获取设备图',
         'GET /api/graph/node/:nodeId - 获取节点详情'
       ]
     }

@@ -8,7 +8,8 @@
     "clear": "node clear-data.js"
   },
   "dependencies": {
-    "neo4j-driver": "^5.13.0"
+    "neo4j-driver": "^5.13.0",
+    "csv-parser": "^3.0.0"
   },
   "author": "GraphSQL Team",
   "license": "MIT"

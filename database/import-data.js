@@ -1,25 +1,21 @@
 const neo4j = require('neo4j-driver');
 const fs = require('fs');
 const path = require('path');
-
-// Neo4j 连接配置
-const NEO4J_URI = process.env.NEO4J_URI || 'bolt://localhost:7687';
-const NEO4J_USER = process.env.NEO4J_USER || 'neo4j';
-const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD || 'password123';
+const csv = require('csv-parser'); // We'll add this dependency later
 
 async function importData() {
-  console.log('🚀 开始导入示例数据到 Neo4j...');
+  console.log('🚀 开始导入数据中心网络拓扑数据到 Neo4j...');
 
   const driver = neo4j.driver(NEO4J_URI, neo4j.auth.basic(NEO4J_USER, NEO4J_PASSWORD));
 
   try {
-    // 测试连接
+    // Test connection
     const session = driver.session();
     await session.run('RETURN 1');
     console.log('✅ Neo4j 数据库连接成功');
     await session.close();
 
-    // 读取并执行约束创建脚本
+    // Read and execute constraint script
     console.log('📋 创建约束和索引...');
     const constraintsScript = fs.readFileSync(
       path.join(__dirname, 'init/01-create-constraints.cypher'),
@@ -42,28 +38,25 @@ async function importData() {
     }
     await constraintSession.close();
 
-    // 读取并执行数据导入脚本
-    console.log('📊 导入示例数据...');
-    const dataScript = fs.readFileSync(
-      path.join(__dirname, 'init/02-load-data.cypher'),
-      'utf8'
-    );
+    // Clear existing data
+    console.log('🗑️ 清除现有数据...');
+    const clearSession = driver.session();
+    await clearSession.run('MATCH (n) DETACH DELETE n');
+    await clearSession.close();
 
-    const dataStatements = dataScript
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0);
+    // Import node info
+    console.log('📊 导入设备节点信息...');
+    await importNodeInfo(driver);
 
-    const dataSession = driver.session();
-    for (const statement of dataStatements) {
-      if (statement.trim()) {
-        await dataSession.run(statement);
-        console.log(`  ✓ 数据导入: ${statement.substring(0, 50)}...`);
-      }
-    }
-    await dataSession.close();
+    // Import node-port relationships
+    console.log('🔗 导入设备-端口连接关系...');
+    await importNodePortRelationships(driver);
 
-    // 验证数据导入
+    // Import port-port relationships
+    console.log('🔌 导入端口-端口连接关系...');
+    await importPortPortRelationships(driver);
+
+    // Verify data import
     console.log('🔍 验证数据导入结果...');
     const verifySession = driver.session();
 
@@ -89,7 +82,7 @@ async function importData() {
       console.log(`    - ${type.type}: ${type.count} 个`);
     });
 
-    console.log('🎉 示例数据导入完成！');
+    console.log('🎉 数据中心网络拓扑数据导入完成！');
 
   } catch (error) {
     console.error('❌ 数据导入失败:', error.message);
@@ -99,7 +92,151 @@ async function importData() {
   }
 }
 
-// 如果直接运行此脚本
+// Import node information from CSV
+async function importNodeInfo(driver) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    const filePath = path.join(__dirname, 'example_data', 'node-info.csv');
+    
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          const session = driver.session();
+          
+          // Create device nodes
+          for (const row of results) {
+            const query = `
+              CREATE (d:Device {
+                device_name: $device_name,
+                subarea: $subarea,
+                dc: $dc,
+                manage_ip: $manage_ip
+              })
+            `;
+            
+            await session.run(query, {
+              device_name: row.DeviceName,
+              subarea: row.SubArea,
+              dc: row.DC,
+              manage_ip: row.ManageIP
+            });
+            
+            console.log(`  ✓ 设备创建: ${row.DeviceName} in ${row.DC}`);
+          }
+          
+          await session.close();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', reject);
+  });
+}
+
+// Import node-port relationships from CSV
+async function importNodePortRelationships(driver) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    const filePath = path.join(__dirname, 'example_data', 'node-port.csv');
+    
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          const session = driver.session();
+          
+          // Create port nodes and device-port relationships
+          for (const row of results) {
+            const portName = row.dst;
+            const deviceName = row.src;
+            
+            // Create port node
+            const createPortQuery = `
+              MERGE (p:Port {port_name: $port_name})
+            `;
+            
+            await session.run(createPortQuery, {
+              port_name: portName
+            });
+            
+            // Create relationship between device and port
+            const createRelQuery = `
+              MATCH (d:Device {device_name: $device_name})
+              MATCH (p:Port {port_name: $port_name})
+              CREATE (d)-[:HAS_PORT]->(p)
+            `;
+            
+            await session.run(createRelQuery, {
+              device_name: deviceName,
+              port_name: portName
+            });
+            
+            console.log(`  ✓ 端口连接: ${deviceName} -> ${portName}`);
+          }
+          
+          await session.close();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', reject);
+  });
+}
+
+// Import port-port relationships from CSV
+async function importPortPortRelationships(driver) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    const filePath = path.join(__dirname, 'example_data', 'port-port.csv');
+    
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        try {
+          const session = driver.session();
+          
+          // Create port-port relationships
+          for (const row of results) {
+            const srcPort = row.src;
+            const dstPort = row.dst;
+            
+            // Create relationship between ports
+            const createRelQuery = `
+              MATCH (p1:Port {port_name: $src_port})
+              MATCH (p2:Port {port_name: $dst_port})
+              CREATE (p1)-[:CONNECTS_TO]->(p2)
+            `;
+            
+            await session.run(createRelQuery, {
+              src_port: srcPort,
+              dst_port: dstPort
+            });
+            
+            console.log(`  ✓ 端口连接: ${srcPort} -> ${dstPort}`);
+          }
+          
+          await session.close();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .on('error', reject);
+  });
+}
+
+// Neo4j 连接配置
+const NEO4J_URI = process.env.NEO4J_URI || 'bolt://localhost:7687';
+const NEO4J_USER = process.env.NEO4J_USER || 'neo4j';
+const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD || 'password123';
+
+// If the script is run directly
 if (require.main === module) {
   importData().catch(console.error);
 }

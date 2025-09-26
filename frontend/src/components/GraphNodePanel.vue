@@ -135,10 +135,8 @@ import {
   Close,
   ZoomIn,
   CopyDocument,
-  User,
-  OfficeBuilding,
-  Document,
-  Star
+  Monitor,
+  Lightning
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -174,21 +172,17 @@ const connectedEdges = computed(() => {
 // 获取节点图标
 const getNodeIcon = (nodeType: string) => {
   const iconMap: Record<string, any> = {
-    'Person': User,
-    'Department': OfficeBuilding,
-    'Project': Document,
-    'Skill': Star
+    'Device': Monitor,
+    'Port': Lightning
   }
-  return iconMap[nodeType] || Star
+  return iconMap[nodeType] || Lightning
 }
 
 // 获取标签类型
 const getTagType = (nodeType: string) => {
   const typeMap: Record<string, any> = {
-    'Person': 'success',
-    'Department': 'primary',
-    'Project': 'warning',
-    'Skill': 'info'
+    'Device': 'primary',
+    'Port': 'success'
   }
   return typeMap[nodeType] || 'default'
 }
@@ -196,11 +190,8 @@ const getTagType = (nodeType: string) => {
 // 获取边标签类型
 const getEdgeTagType = (edgeType: string) => {
   const typeMap: Record<string, any> = {
-    'MANAGES': 'danger',
-    'WORKS_IN': 'primary',
-    'PARTICIPATES_IN': 'success',
-    'HAS_SKILL': 'warning',
-    'COLLABORATES_WITH': 'info'
+    'HAS_PORT': 'primary',
+    'CONNECTS_TO': 'success'
   }
   return typeMap[edgeType] || 'default'
 }
@@ -208,14 +199,15 @@ const getEdgeTagType = (edgeType: string) => {
 // 格式化属性标签
 const formatPropertyLabel = (key: string): string => {
   const labelMap: Record<string, string> = {
+    'device_name': '设备名称',
+    'port_name': '端口名称',
+    'subarea': '区域',
+    'dc': '数据中心',
+    'manage_ip': '管理IP',
     'name': '名称',
-    'title': '职位',
-    'department': '部门',
-    'level': '级别',
     'description': '描述',
     'status': '状态',
-    'category': '分类',
-    'avatar': '头像'
+    'category': '分类'
   }
   return labelMap[key] || key
 }

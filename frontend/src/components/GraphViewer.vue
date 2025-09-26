@@ -176,10 +176,8 @@ let updateTimeoutId: number | null = null
 
 // Computed
 const nodeTypeColors: Record<string, string> = {
-  'Person': '#FF6B6B',
-  'Department': '#4ECDC4',
-  'Project': '#45B7D1',
-  'Skill': '#F7DC6F'
+  'Device': '#3498DB',
+  'Port': '#E74C3C'
 }
 
 const getNodeColor = (nodeType: string) => {

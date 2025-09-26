@@ -3,13 +3,13 @@ const router = express.Router();
 const graphController = require('../controllers/graphController');
 
 // 图数据路由
-router.get('/data', graphController.getGraph);
+router.get('/data', graphController.getGraphData);
 
-// 部门子图路由
-router.get('/department/:departmentName', graphController.getDepartmentSubgraph);
+// 数据中心子图路由
+router.get('/datacenter/:dcName', graphController.getSubgraphByDataCenter);
 
-// 项目图路由
-router.get('/project/:projectId', graphController.getProjectGraph);
+// 设备图路由
+router.get('/device/:deviceName', graphController.getDeviceGraph);
 
 // 节点搜索路由
 router.get('/search', graphController.searchNodes);

@@ -1,13 +1,10 @@
 // 创建唯一性约束和索引
-CREATE CONSTRAINT person_id_unique IF NOT EXISTS FOR (p:Person) REQUIRE p.id IS UNIQUE;
-CREATE CONSTRAINT department_id_unique IF NOT EXISTS FOR (d:Department) REQUIRE d.id IS UNIQUE;
-CREATE CONSTRAINT project_id_unique IF NOT EXISTS FOR (p:Project) REQUIRE p.id IS UNIQUE;
-CREATE CONSTRAINT skill_id_unique IF NOT EXISTS FOR (s:Skill) REQUIRE s.id IS UNIQUE;
+CREATE CONSTRAINT device_id_unique IF NOT EXISTS FOR (d:Device) REQUIRE d.device_name IS UNIQUE;
+CREATE CONSTRAINT port_id_unique IF NOT EXISTS FOR (p:Port) REQUIRE p.port_name IS UNIQUE;
 
 // 创建索引以优化查询性能
-CREATE INDEX person_name_index IF NOT EXISTS FOR (p:Person) ON (p.name);
-CREATE INDEX person_department_index IF NOT EXISTS FOR (p:Person) ON (p.department);
-CREATE INDEX person_level_index IF NOT EXISTS FOR (p:Person) ON (p.level);
-CREATE INDEX department_name_index IF NOT EXISTS FOR (d:Department) ON (d.name);
-CREATE INDEX project_status_index IF NOT EXISTS FOR (p:Project) ON (p.status);
-CREATE INDEX skill_category_index IF NOT EXISTS FOR (s:Skill) ON (s.category);
+CREATE INDEX device_name_index IF NOT EXISTS FOR (d:Device) ON (d.device_name);
+CREATE INDEX device_subarea_index IF NOT EXISTS FOR (d:Device) ON (d.subarea);
+CREATE INDEX device_dc_index IF NOT EXISTS FOR (d:Device) ON (d.dc);
+CREATE INDEX device_manageip_index IF NOT EXISTS FOR (d:Device) ON (d.manage_ip);
+CREATE INDEX port_name_index IF NOT EXISTS FOR (p:Port) ON (p.port_name);

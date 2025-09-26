@@ -12,7 +12,7 @@ export const useGraphStore = defineStore('graph', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const searchResults = ref<GraphNode[]>([])
-  const currentView = ref<'all' | 'department' | 'project'>('all')
+  const currentView = ref<'all' | 'datacenter' | 'device'>('all')
   const currentFilter = ref<string>('')
 
   // 计算属性
@@ -63,14 +63,20 @@ export const useGraphStore = defineStore('graph', () => {
 
       const data = await graphAPI.getGraphData(limit)
       console.log('获取到的数据:', data)
-      console.log('节点数:', data.nodes?.length)
-      console.log('边数:', data.edges?.length)
+
+      // Ensure data has the expected structure
+      if (!data || typeof data !== 'object') {
+        console.error('Invalid data format received:', data)
+        throw new Error('Invalid data format from server')
+      }
 
       // 确保数据格式正确
       if (!data.nodes) data.nodes = []
       if (!data.edges) data.edges = []
 
       graphData.value = data
+      currentView.value = 'all'
+      currentFilter.value = ''
       currentView.value = 'all'
       currentFilter.value = ''
 
@@ -115,37 +121,37 @@ export const useGraphStore = defineStore('graph', () => {
     }
   }
 
-  // 加载部门子图
-  const loadDepartmentSubgraph = async (departmentName: string) => {
+  // 加载数据中心子图
+  const loadDataCenterSubgraph = async (dcName: string) => {
     try {
       setLoading(true)
       clearError()
 
-      const data = await graphAPI.getDepartmentSubgraph(departmentName)
+      const data = await graphAPI.getDataCenterSubgraph(dcName)
       graphData.value = data
-      currentView.value = 'department'
-      currentFilter.value = departmentName
+      currentView.value = 'datacenter'
+      currentFilter.value = dcName
     } catch (err: any) {
-      setError(err.message || '加载部门子图失败')
-      console.error('加载部门子图失败:', err)
+      setError(err.message || '加载数据中心子图失败')
+      console.error('加载数据中心子图失败:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  // 加载项目图
-  const loadProjectGraph = async (projectId: string) => {
+  // 加载设备图
+  const loadDeviceGraph = async (deviceName: string) => {
     try {
       setLoading(true)
       clearError()
 
-      const data = await graphAPI.getProjectGraph(projectId)
+      const data = await graphAPI.getDeviceGraph(deviceName)
       graphData.value = data
-      currentView.value = 'project'
-      currentFilter.value = projectId
+      currentView.value = 'device'
+      currentFilter.value = deviceName
     } catch (err: any) {
-      setError(err.message || '加载项目图失败')
-      console.error('加载项目图失败:', err)
+      setError(err.message || '加载设备图失败')
+      console.error('加载设备图失败:', err)
     } finally {
       setLoading(false)
     }
@@ -256,8 +262,8 @@ export const useGraphStore = defineStore('graph', () => {
     loadGraphData,
     loadGraphStats,
     searchNodes,
-    loadDepartmentSubgraph,
-    loadProjectGraph,
+    loadDataCenterSubgraph,
+    loadDeviceGraph,
     loadNodeDetails,
     selectNode,
     selectEdge,
