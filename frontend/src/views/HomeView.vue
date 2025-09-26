@@ -158,7 +158,7 @@ onUnmounted(() => {
   display: flex;
   height: 100%;
   gap: var(--space-3);
-  max-width: 1400px;
+  max-width: 95%;
   margin: 0 auto;
 }
 
@@ -296,6 +296,46 @@ onUnmounted(() => {
 
 .fab-button:active {
   transform: translateY(-1px);
+}
+
+/* Responsive width adjustments */
+@media (min-width: 768px) {
+  .view-container {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .view-container {
+    max-width: 90%;
+  }
+  .home-view {
+    padding: var(--space-3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .view-container {
+    max-width: 1400px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .view-container {
+    max-width: 1800px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .view-container {
+    max-width: 2200px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .view-container {
+    max-width: 2560px;
+  }
 }
 
 /* GitHub-style Responsive Design */

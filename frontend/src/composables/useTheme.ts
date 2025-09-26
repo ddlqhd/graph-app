@@ -5,7 +5,7 @@ export type Theme = 'light' | 'dark' | 'auto'
 const THEME_KEY = 'graphsql-theme'
 
 // 主题状态
-const currentTheme = ref<Theme>('auto')
+const currentTheme = ref<Theme>('light')
 const isDark = ref(false)
 
 // 从localStorage读取保存的主题

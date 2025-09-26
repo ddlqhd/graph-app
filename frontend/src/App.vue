@@ -174,9 +174,64 @@ onUnmounted(() => {
   align-items: center;
   height: 100%;
   padding: 0 var(--space-4);
-  max-width: 1280px;
+  max-width: 95%;
   margin: 0 auto;
   width: 100%;
+}
+
+/* Responsive header and footer adjustments */
+@media (min-width: 768px) {
+  .header-content {
+    max-width: 90%;
+  }
+  .footer-content {
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-content {
+    max-width: 90%; /* Adjusted for wider display */
+  }
+  .footer-content {
+    max-width: 90%; /* Adjusted for wider display */
+  }
+}
+
+@media (min-width: 1280px) {
+  .header-content {
+    max-width: 1400px; /* Increased max width for large screens */
+  }
+  .footer-content {
+    max-width: 1400px; /* Increased max width for large screens */
+  }
+}
+
+@media (min-width: 1440px) {
+  .header-content {
+    max-width: 1800px; /* Increased max width for very large screens */
+  }
+  .footer-content {
+    max-width: 1800px; /* Increased max width for very large screens */
+  }
+}
+
+@media (min-width: 1920px) {
+  .header-content {
+    max-width: 2200px; /* Increased max width for wide screens */
+  }
+  .footer-content {
+    max-width: 2200px; /* Increased max width for wide screens */
+  }
+}
+
+@media (min-width: 2560px) {
+  .header-content {
+    max-width: 2560px; /* Maximum width for ultra-wide screens */
+  }
+  .footer-content {
+    max-width: 2560px; /* Maximum width for ultra-wide screens */
+  }
 }
 
 /* Logo Section with GitHub-style branding */
@@ -287,6 +342,13 @@ onUnmounted(() => {
   min-height: 0;
 }
 
+/* Responsive main content adjustments */
+@media (max-width: 768px) {
+  .app-main {
+    padding: var(--space-2);
+  }
+}
+
 /* GitHub-style Footer */
 .app-footer {
   background: var(--color-bg-default);
@@ -302,10 +364,13 @@ onUnmounted(() => {
   align-items: center;
   font-size: 12px;
   font-weight: 400;
-  max-width: 1280px;
+  max-width: 95%;
   margin: 0 auto;
   width: 100%;
 }
+
+/* Responsive footer adjustments */
+
 
 .footer-links {
   display: flex;
@@ -332,6 +397,7 @@ onUnmounted(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .header-content {
+    max-width: 98%;
     padding: 0 var(--space-3);
   }
 
@@ -344,6 +410,7 @@ onUnmounted(() => {
   }
 
   .footer-content {
+    max-width: 98%;
     flex-direction: column;
     gap: var(--space-2);
     text-align: center;
