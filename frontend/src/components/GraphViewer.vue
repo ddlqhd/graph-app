@@ -123,6 +123,13 @@
       @close="clearSelection"
       @expand="onExpandNode"
     />
+    
+    <!-- 边详情面板 -->
+    <GraphEdgePanel
+      v-if="selectedEdge"
+      :edge="selectedEdge"
+      @close="clearSelection"
+    />
   </div>
 </template>
 
@@ -133,6 +140,7 @@ import type { GraphData as G6GraphData } from '@antv/g6'
 import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
 import GraphNodePanel from './GraphNodePanel.vue'
+import GraphEdgePanel from './GraphEdgePanel.vue'
 import {
   FullScreen,
   ZoomIn,
@@ -158,6 +166,7 @@ const graphStore = useGraphStore()
 const {
   graphData,
   selectedNode,
+  selectedEdge,
   loading,
   error,
   nodeTypes
@@ -250,18 +259,27 @@ const initGraph = () => {
       defaultEdge: {
         style: {
           stroke: '#BDC3C7',
-          lineWidth: 2,
-          endArrow: {
-            path: 'M 0,0 L 8,4 L 8,-4 Z',
-            fill: '#BDC3C7'
-          }
+          lineWidth: 2
         },
         labelCfg: {
-          autoRotate: true,
           style: {
-            fontSize: 10,
+            fontSize: 0,  // 隐藏标签
             fill: '#666'
           }
+        }
+      },
+      
+      // 状态样式
+      edgeStateStyles: {
+        // 鼠标悬停时的样式
+        hover: {
+          stroke: '#2ECC71',
+          lineWidth: 4
+        },
+        // 选中时的样式
+        selected: {
+          stroke: '#2ECC71',
+          lineWidth: 4
         }
       }
     }
@@ -345,6 +363,21 @@ const bindEvents = () => {
           }
         })
       }
+    }
+  })
+
+  // 边悬浮事件
+  graph.on('edge:mouseenter', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.setItemState(item, 'hover', true)
+    }
+  })
+
+  graph.on('edge:mouseleave', (evt) => {
+    const { item } = evt
+    if (item && !item.hasState('selected')) {
+      graph.clearItemStates(item, 'hover')
     }
   })
 

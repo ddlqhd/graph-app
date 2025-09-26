@@ -7,11 +7,22 @@ class GraphModel {
 
   // 获取所有节点和关系数据，用于图可视化
   async getGraphData(limit = 100) {
+    // 优化查询，将端口间的连接直接转换为设备间的连接
     const query = `
-      MATCH (n)
-      OPTIONAL MATCH (n)-[r]->(m)
-      RETURN n, r, m
+      // 获取所有设备节点
+      MATCH (d:Device)
+      OPTIONAL MATCH (d)-[:HAS_PORT]->(p)-[:CONNECTS_TO]-(p2)<-[:HAS_PORT]-(d2)
+      WHERE d2 IS NOT NULL
+      RETURN d, d2, p, p2
       LIMIT toInteger($limit)
+      
+      UNION
+      
+      // 获取没有连接的设备节点
+      MATCH (d:Device)
+      WHERE NOT (d)-[:HAS_PORT]->(:Port)-[:CONNECTS_TO]-(:Port)<-[:HAS_PORT]-(:Device)
+      AND NOT (d)-[:HAS_PORT]->(:Port)<-[:HAS_PORT]-(:Device)
+      RETURN d, null as d2, null as p, null as p2
     `;
 
     try {
@@ -21,45 +32,58 @@ class GraphModel {
       const edges = [];
 
       result.records.forEach(record => {
-        const startNode = record.get('n');
-        const relationship = record.get('r');
-        const endNode = record.get('m');
+        const device = record.get('d');
+        const connectedDevice = record.get('d2');
+        const port = record.get('p');
+        const connectedPort = record.get('p2');
 
-        // 添加起始节点
-        if (startNode && !nodes.has(startNode.identity.toString())) {
-          const nodeLabel = startNode.properties.device_name || startNode.properties.port_name || 
-                           startNode.properties.name || startNode.properties.id || 'Unknown';
-          nodes.set(startNode.identity.toString(), {
-            id: startNode.identity.toString(),
+        // 添加设备节点
+        if (device && !nodes.has(device.identity.toString())) {
+          const nodeLabel = device.properties.device_name || 
+                           device.properties.name || 
+                           device.properties.id || 
+                           'Unknown';
+          nodes.set(device.identity.toString(), {
+            id: device.identity.toString(),
             label: nodeLabel,
-            type: startNode.labels[0] || 'Unknown',
-            properties: startNode.properties,
-            ...this.getNodeStyle(startNode.labels[0])
+            type: 'Device',
+            properties: device.properties,
+            ...this.getNodeStyle('Device')
           });
         }
 
-        // 添加关系和目标节点
-        if (relationship && endNode) {
-          const nodeLabel = endNode.properties.device_name || endNode.properties.port_name || 
-                           endNode.properties.name || endNode.properties.id || 'Unknown';
-          if (!nodes.has(endNode.identity.toString())) {
-            nodes.set(endNode.identity.toString(), {
-              id: endNode.identity.toString(),
+        // 如果存在连接的设备，则创建边
+        if (connectedDevice) {
+          // 添加连接的设备节点
+          if (!nodes.has(connectedDevice.identity.toString())) {
+            const nodeLabel = connectedDevice.properties.device_name || 
+                             connectedDevice.properties.name || 
+                             connectedDevice.properties.id || 
+                             'Unknown';
+            nodes.set(connectedDevice.identity.toString(), {
+              id: connectedDevice.identity.toString(),
               label: nodeLabel,
-              type: endNode.labels[0] || 'Unknown',
-              properties: endNode.properties,
-              ...this.getNodeStyle(endNode.labels[0])
+              type: 'Device',
+              properties: connectedDevice.properties,
+              ...this.getNodeStyle('Device')
             });
           }
 
+          // 创建设备之间的连接（基于端口连接）
+          const edgeId = `${device.identity.toString()}-${connectedDevice.identity.toString()}`;
           edges.push({
-            id: relationship.identity.toString(),
-            source: startNode.identity.toString(),
-            target: endNode.identity.toString(),
-            label: relationship.type,
-            type: relationship.type,
-            properties: relationship.properties,
-            ...this.getEdgeStyle(relationship.type)
+            id: edgeId,
+            source: device.identity.toString(),
+            target: connectedDevice.identity.toString(),
+            label: 'CONNECTS_TO_DEVICE',
+            type: 'CONNECTS_TO_DEVICE',
+            properties: {
+              original_ports: {
+                src_port: port ? port.properties.port_name : null,
+                dst_port: connectedPort ? connectedPort.properties.port_name : null
+              }
+            },
+            ...this.getEdgeStyle('CONNECTS_TO_DEVICE')
           });
         }
       });
@@ -132,7 +156,8 @@ class GraphModel {
       style: {
         lineWidth: 1,
         lineDash: [0]
-      }
+      },
+      label: ''  // 不显示默认标签
     };
   }
 
