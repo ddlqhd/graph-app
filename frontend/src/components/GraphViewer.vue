@@ -61,40 +61,11 @@
 
         <el-divider direction="vertical" />
 
-        <el-button-group>
-          <el-tooltip content="力导向布局">
-            <el-button
-              @click="changeLayout('force')"
-              :type="currentLayout === 'force' ? 'primary' : 'default'"
-            >
-              力导向
-            </el-button>
-          </el-tooltip>
-          <el-tooltip content="层次布局">
-            <el-button
-              @click="changeLayout('dagre')"
-              :type="currentLayout === 'dagre' ? 'primary' : 'default'"
-            >
-              层次
-            </el-button>
-          </el-tooltip>
-          <el-tooltip content="辐射布局">
-            <el-button
-              @click="changeLayout('radial')"
-              :type="currentLayout === 'radial' ? 'primary' : 'default'"
-            >
-              辐射
-            </el-button>
-          </el-tooltip>
-          <el-tooltip content="网格布局">
-            <el-button
-              @click="changeLayout('grid')"
-              :type="currentLayout === 'grid' ? 'primary' : 'default'"
-            >
-              网格
-            </el-button>
-          </el-tooltip>
-        </el-button-group>
+        <LayoutControls 
+            :graph="graph" 
+            :graph-data="graphData" 
+            @layout-changed="onLayoutChanged"
+          />
       </div>
 
       <!-- 图例 -->
@@ -127,6 +98,7 @@ import { useGraphStore } from '@/stores/graph'
 import GraphNodePanel from './GraphNodePanel.vue'
 import GraphEdgePanel from './GraphEdgePanel.vue'
 import GraphLegend from './GraphLegend.vue'
+import LayoutControls from './LayoutControls.vue'
 import {
   FullScreen,
   ZoomIn,
@@ -162,8 +134,7 @@ const {
 const graphContainer = ref<HTMLDivElement>()
 let graph: any = null
 
-// State
-const currentLayout = ref('force')
+
 
 // 防止重复更新的锁机制
 let isUpdating = false
@@ -756,48 +727,7 @@ const resetZoom = () => {
   }
 }
 
-// 改变布局
-const changeLayout = (layoutType: string) => {
-  if (!graph) return
 
-  currentLayout.value = layoutType
-
-  const layoutConfig: Record<string, any> = {
-    force: {
-      type: 'force',
-      preventOverlap: true,
-      nodeStrength: -300,
-      linkDistance: 150
-    },
-    dagre: {
-      type: 'dagre',
-      rankdir: 'TB',
-      nodesep: 20,
-      ranksep: 50
-    },
-    radial: {
-      type: 'radial',
-      center: [400, 300],
-      linkDistance: 150,
-      maxIteration: 1000,
-      focusNode: graphData.value.nodes[0]?.id
-    },
-    grid: {
-      type: 'grid',
-      begin: [0, 0],
-      preventOverlap: true,
-      nodeSize: 50
-    }
-  }
-
-  graph.updateLayout(layoutConfig[layoutType])
-
-  // 布局更改后自动适应画布
-  setTimeout(() => {
-    console.log('🎯 布局更改后自动适应画布')
-    fitView()
-  }, 800) // 等待布局动画完成
-}
 
 // 清除选择
 const clearSelection = () => {
@@ -811,6 +741,16 @@ const clearSelection = () => {
       graph.clearItemStates(edge)
     })
   }
+}
+
+// 布局变更处理
+const onLayoutChanged = (layoutType: string) => {
+  console.log(`🎯 布局已更改为: ${layoutType}`)
+  // 布局更改后自动适应画布
+  setTimeout(() => {
+    console.log('🎯 布局更改后自动适应画布')
+    fitView()
+  }, 800) // 等待布局动画完成
 }
 
 // 展开节点
