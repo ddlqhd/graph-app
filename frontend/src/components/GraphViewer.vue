@@ -133,6 +133,7 @@ const {
 // Refs
 const graphContainer = ref<HTMLDivElement>()
 let graph: any = null
+const tempEdgeIds = ref<string[]>([]) // 用于存储临时添加的边的ID
 
 
 
@@ -237,7 +238,34 @@ const initGraph = () => {
       },
       
       // 状态样式
+      nodeStateStyles: {
+        highlight: {
+          fill: '#F39C12',
+          stroke: '#F39C12',
+          lineWidth: 5,
+          shadowColor: '#F39C12',
+          shadowBlur: 15,
+        },
+        inactive: {
+          fill: '#333',
+          stroke: '#222',
+          lineWidth: 1,
+          opacity: 0.3,
+        },
+        selected: {
+          stroke: '#2ECC71',
+          lineWidth: 4,
+        }
+      },
       edgeStateStyles: {
+        highlight: {
+          stroke: '#F39C12',
+          lineWidth: 3,
+        },
+        inactive: {
+          stroke: '#333',
+          opacity: 0.3,
+        },
         // 鼠标悬停时的样式
         hover: {
           stroke: '#2ECC71',
@@ -351,14 +379,7 @@ const bindEvents = () => {
   // 画布点击事件（清除选择）
   graph.on('canvas:click', () => {
     graphStore.clearSelection()
-
-    // 清除所有高亮状态
-    graph.getNodes().forEach(node => {
-      graph.clearItemStates(node)
-    })
-    graph.getEdges().forEach(edge => {
-      graph.clearItemStates(edge)
-    })
+    clearPathHighlight() // 同时清除路径高亮
   })
 
   // 节点悬浮事件
@@ -808,6 +829,124 @@ watch(graphData, (newData, oldData) => {
 
   console.log('⏰ 设置更新定时器')
 }, { deep: true })
+
+// --- 路径高亮 ---
+// 清除路径高亮
+const clearPathHighlight = () => {
+  if (!graph) return;
+
+  // 移除临时添加的边
+  tempEdgeIds.value.forEach(edgeId => {
+    const edge = graph.findById(edgeId);
+    if (edge) {
+      graph.removeItem(edge);
+    }
+  });
+  tempEdgeIds.value = []; // 清空ID列表
+
+  graph.getNodes().forEach(node => {
+    graph.clearItemStates(node, ['highlight', 'inactive']);
+  });
+  graph.getEdges().forEach(edge => {
+    graph.clearItemStates(edge, ['highlight', 'inactive']);
+  });
+};
+
+// 高亮显示路径
+const highlightPath = (pathNodes: { id: string }[]) => {
+  if (!graph) return;
+
+  clearPathHighlight();
+
+  if (!pathNodes || pathNodes.length === 0) {
+    return;
+  }
+
+  const pathNodeIds = new Set(pathNodes.map(n => n.id));
+
+  // 找出路径上的边
+  const pathEdgeIds = new Set();
+  graph.getEdges().forEach(edge => {
+    const edgeModel = edge.getModel();
+    if (pathNodeIds.has(edgeModel.source) && pathNodeIds.has(edgeModel.target)) {
+      pathEdgeIds.add(edgeModel.id);
+    }
+  });
+
+  // 设置节点和边的状态
+  graph.getNodes().forEach(node => {
+    if (pathNodeIds.has(node.getID())) {
+      graph.setItemState(node, 'highlight', true);
+    } else {
+      graph.setItemState(node, 'inactive', true);
+    }
+  });
+
+  graph.getEdges().forEach(edge => {
+    if (pathEdgeIds.has(edge.getID())) {
+      graph.setItemState(edge, 'highlight', true);
+    } else {
+      graph.setItemState(edge, 'inactive', true);
+    }
+  });
+};
+
+// 高亮简化路径（只显示Device和它们之间的虚拟边）
+const highlightSimplifiedPath = (pathData: any) => {
+  if (!graph) return;
+
+  clearPathHighlight(); // 清除任何现有高亮和临时边
+
+  const deviceNodes = pathData.nodes.filter((n: any) => n.type === 'Device');
+  const deviceNodeIds = new Set(deviceNodes.map((n: any) => n.id));
+
+  // 1. 将所有现有节点和边设为 inactive
+  graph.getNodes().forEach((node: any) => {
+    graph.setItemState(node, 'inactive', true);
+  });
+  graph.getEdges().forEach((edge: any) => {
+    graph.setItemState(edge, 'inactive', true);
+  });
+
+  // 2. 高亮路径中的 Device 节点
+  deviceNodes.forEach((deviceNode: any) => {
+    const nodeInGraph = graph.findById(deviceNode.id);
+    if (nodeInGraph) {
+      graph.setItemState(nodeInGraph, 'highlight', true);
+      graph.setItemState(nodeInGraph, 'inactive', false); // 覆盖 inactive
+    }
+  });
+
+  // 3. 添加设备之间的虚拟边
+  for (let i = 0; i < deviceNodes.length - 1; i++) {
+    const sourceId = deviceNodes[i].id;
+    const targetId = deviceNodes[i + 1].id;
+    const tempEdgeId = `temp-edge-${sourceId}-${targetId}`;
+
+    graph.addItem('edge', {
+      id: tempEdgeId,
+      source: sourceId,
+      target: targetId,
+      style: {
+        stroke: '#F39C12', // 高亮颜色
+        lineWidth: 3,
+        lineDash: [5, 5], // 虚线样式
+        shadowColor: '#F39C12',
+        shadowBlur: 15,
+      },
+    });
+    tempEdgeIds.value.push(tempEdgeId);
+  }
+};
+
+
+// 添加方法到组件暴露接口
+defineExpose({
+  highlightPath,
+  highlightSimplifiedPath,
+  clearPathHighlight,
+  graph // 暴露 graph 实例以便外部组件可以直接操作
+});
 
 // 监听窗口大小变化
 const handleResize = () => {

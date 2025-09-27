@@ -23,4 +23,7 @@ router.get('/stats', graphController.getGraphStats);
 // 健康检查路由
 router.get('/health', graphController.healthCheck);
 
+// 路径查询路由
+router.get('/path', graphController.findPath);
+
 module.exports = router;

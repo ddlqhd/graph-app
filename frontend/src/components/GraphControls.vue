@@ -1,6 +1,9 @@
 <template>
   <div class="graph-controls">
     <el-card class="control-card">
+      <!-- 网络路径查询 -->
+      <NetworkPathQuery />
+
       <!-- 搜索区域 -->
       <div class="search-section">
         <el-input
@@ -198,6 +201,7 @@ import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
 import type { GraphNode } from '@/services/graphService'
 import { Search } from '@element-plus/icons-vue'
+import NetworkPathQuery from './NetworkPathQuery.vue'
 
 // Store
 const graphStore = useGraphStore()

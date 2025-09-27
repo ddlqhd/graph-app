@@ -236,6 +236,17 @@ export const useGraphStore = defineStore('graph', () => {
     )
   }
 
+  // 设置图数据
+  const setGraphData = (data: GraphData) => {
+    if (data && data.nodes) {
+      graphData.value = data;
+      currentView.value = 'all'; // or a specific view like 'path'
+      currentFilter.value = '';
+    } else {
+      console.error('Attempted to set invalid graph data', data);
+    }
+  }
+
   return {
     // 状态
     graphData,
@@ -272,6 +283,7 @@ export const useGraphStore = defineStore('graph', () => {
     findNodeById,
     findEdgeById,
     getAdjacentNodes,
-    getEdgesBetweenNodes
+    getEdgesBetweenNodes,
+    setGraphData
   }
 })

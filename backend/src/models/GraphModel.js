@@ -333,6 +333,87 @@ class GraphModel {
       edges: edges
     };
   }
+
+  // 查找路径
+  async findPath(sourceIP, targetIP) {
+    const query = `
+      MATCH (startDevice:Device {manage_ip: $sourceIP}), (endDevice:Device {manage_ip: $targetIP})
+      OPTIONAL MATCH path = shortestPath((startDevice)-[:HAS_PORT|CONNECTS_TO*..30]-(endDevice))
+      RETURN path, startDevice, endDevice
+      LIMIT 1
+    `;
+
+    try {
+      const result = await this.db.executeReadQuery(query, { sourceIP, targetIP });
+
+      if (result.records.length === 0) {
+        // 这意味着连设备节点本身都找不到
+        return { nodes: [], edges: [] };
+      }
+
+      const record = result.records[0];
+      const path = record.get('path');
+      const startDevice = record.get('startDevice');
+      const endDevice = record.get('endDevice');
+
+      if (!path) {
+        // Fallback for OPTIONAL MATCH when no path is found
+        const nodes = [startDevice, endDevice].map(node => ({
+          id: node.identity.toString(),
+          label: node.properties.device_name || 'Unknown',
+          type: node.labels[0],
+          properties: node.properties,
+          ...this.getNodeStyle(node.labels[0])
+        }));
+        return { nodes: nodes, edges: [] };
+      }
+
+      // --- The definitive way to correctly extract an ordered path ---
+      const orderedPathNodes = [path.start];
+      let lastNode = path.start;
+
+      for (const segment of path.segments) {
+        let nextNode;
+        // Check if the start of the segment is the same as the last node we processed
+        if (segment.start.identity.equals(lastNode.identity)) {
+          nextNode = segment.end;
+        } else {
+          nextNode = segment.start;
+        }
+        orderedPathNodes.push(nextNode);
+        lastNode = nextNode;
+      }
+
+      // Now we have the correctly ordered nodes, convert them to our format
+      const nodes = orderedPathNodes.map(node => ({
+        id: node.identity.toString(),
+        label: node.properties.device_name || node.properties.port_name || 'Unknown',
+        type: node.labels[0],
+        properties: node.properties,
+        ...this.getNodeStyle(node.labels[0])
+      }));
+
+      // And get the edges from the segments
+      const edges = path.segments.map(segment => {
+        const rel = segment.relationship;
+        return {
+          id: rel.identity.toString(),
+          source: rel.start.toString(),
+          target: rel.end.toString(),
+          label: rel.type,
+          type: rel.type,
+          properties: rel.properties,
+          ...this.getEdgeStyle(rel.type)
+        };
+      });
+
+      return { nodes, edges };
+
+    } catch (error) {
+      console.error('路径查询失败:', error);
+      return { nodes: [], edges: [], error: error.message };
+    }
+  }
 }
 
 module.exports = new GraphModel();

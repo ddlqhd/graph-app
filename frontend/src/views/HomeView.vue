@@ -7,6 +7,7 @@
       <!-- 右侧图可视化区域 -->
       <div class="graph-section">
         <GraphViewer
+          ref="graphViewerRef"
           :auto-resize="true"
           class="graph-viewer"
         />
@@ -66,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, provide } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
 import GraphViewer from '@/components/GraphViewer.vue'
@@ -80,6 +81,10 @@ const { graphData, loading, error } = storeToRefs(graphStore)
 
 // 状态
 const isFullscreen = ref(false)
+const graphViewerRef = ref()
+
+// 将GraphViewer引用提供给子组件
+provide('graphViewer', graphViewerRef)
 
 // 方法
 const retryConnection = async () => {

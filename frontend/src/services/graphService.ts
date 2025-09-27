@@ -97,6 +97,14 @@ class GraphAPI {
     const data = await api.get<any, any>('/api/graph/health')
     return data
   }
+
+  // 查找路径
+  async findPath(sourceIP: string, targetIP: string): Promise<GraphData> {
+    const data = await api.get<GraphData, GraphData>(
+      `/api/graph/path?source=${encodeURIComponent(sourceIP)}&target=${encodeURIComponent(targetIP)}`
+    )
+    return data
+  }
 }
 
 export const graphAPI = new GraphAPI()

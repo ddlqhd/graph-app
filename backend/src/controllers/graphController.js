@@ -82,6 +82,23 @@ async function healthCheck(req, res) {
   }
 }
 
+// 路径查询
+async function findPath(req, res) {
+  try {
+    const { source, target } = req.query;
+    
+    if (!source || !target) {
+      return res.status(400).json({ error: '缺少源节点或目标节点参数' });
+    }
+    
+    const pathData = await GraphModel.findPath(source, target);
+    res.json(pathData);
+  } catch (error) {
+    console.error('路径查询失败:', error);
+    res.status(500).json({ error: '路径查询失败' });
+  }
+}
+
 module.exports = {
   getGraphData,
   getSubgraphByDataCenter,
@@ -89,5 +106,6 @@ module.exports = {
   searchNodes,
   getNodeDetails,
   getGraphStats,
-  healthCheck
+  healthCheck,
+  findPath
 };
