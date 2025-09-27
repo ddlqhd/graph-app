@@ -1,199 +1,73 @@
 <template>
   <div class="node-panel">
-    <el-card class="panel-card">
-      <template #header>
-        <div class="panel-header">
-          <span class="panel-title">
-            <el-icon class="title-icon">
-              <component :is="getNodeIcon(node.type)" />
-            </el-icon>
-            节点详情
-          </span>
-          <el-button
-            type="text"
-            size="small"
-            @click="$emit('close')"
-            :icon="Close"
-          />
-        </div>
-      </template>
+    <div class="node-panel-header">
+      <h3>节点详情</h3>
+      <el-button class="close-btn" @click="$emit('close')" :icon="Close" size="small" text />
+    </div>
 
+    <div v-if="node" class="node-panel-content">
       <div class="node-info">
-        <!-- 基础信息 -->
-        <div class="info-section">
-          <h4>基础信息</h4>
-          <el-descriptions :column="1" size="small">
-            <el-descriptions-item label="ID">
-              {{ node.id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="名称">
-              <el-tag :color="node.color" class="name-tag">
-                {{ node.label }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="类型">
-              <el-tag :type="getTagType(node.type)">
-                {{ node.type }}
-              </el-tag>
-            </el-descriptions-item>
-          </el-descriptions>
+        <div class="info-item">
+          <label>ID:</label>
+          <span>{{ node.id }}</span>
         </div>
 
-        <!-- 属性信息 -->
-        <div class="info-section" v-if="node.properties && Object.keys(node.properties).length > 0">
-          <h4>属性信息</h4>
-          <el-descriptions :column="1" size="small">
-            <el-descriptions-item
-              v-for="(value, key) in node.properties"
-              :key="key"
-              :label="formatPropertyLabel(key)"
-            >
-              <span v-if="typeof value === 'string' && value.startsWith('http')">
-                <el-link :href="value" target="_blank" type="primary">
-                  {{ value }}
-                </el-link>
-              </span>
-              <span v-else>
-                {{ formatPropertyValue(value) }}
-              </span>
-            </el-descriptions-item>
-          </el-descriptions>
-        </div>
-
-        <!-- 相关节点信息 -->
-        <div class="info-section" v-if="adjacentNodes.length > 0">
-          <h4>
-            相关节点
-            <el-badge :value="adjacentNodes.length" class="item-badge" />
-          </h4>
-          <div class="adjacent-nodes">
-            <el-tag
-              v-for="adjNode in adjacentNodes"
-              :key="adjNode.id"
-              :color="adjNode.color"
-              class="adjacent-node-tag"
-              @click="$emit('selectNode', adjNode)"
-            >
-              {{ adjNode.label }}
-            </el-tag>
-          </div>
-        </div>
-
-        <!-- 连接关系 -->
-        <div class="info-section" v-if="connectedEdges.length > 0">
-          <h4>
-            连接关系
-            <el-badge :value="connectedEdges.length" class="item-badge" />
-          </h4>
-          <div class="connected-edges">
-            <div
-              v-for="edge in connectedEdges"
-              :key="edge.id"
-              class="edge-item"
-            >
-              <el-tag size="small" :type="getEdgeTagType(edge.type)">
-                {{ edge.label || edge.type }}
-              </el-tag>
-              <span class="edge-direction">
-                {{ getEdgeDirection(edge) }}
-              </span>
-            </div>
-          </div>
+        <!-- 动态显示所有节点属性 -->
+        <div
+          v-for="(value, key) in getAllNodeProperties()"
+          :key="key"
+          class="info-item"
+        >
+          <label>{{ formatPropertyLabel(key) }}:</label>
+          <span v-if="typeof value === 'string' && value.startsWith('http')">
+            <el-link :href="value" target="_blank" type="primary" :underline="false">
+              {{ value }}
+            </el-link>
+          </span>
+          <span v-else>
+            {{ formatPropertyValue(value) }}
+          </span>
         </div>
       </div>
+    </div>
 
-      <!-- 操作按钮 -->
-      <template #footer>
-        <div class="panel-actions">
-          <el-button
-            size="small"
-            @click="$emit('expand', node.id)"
-            :icon="ZoomIn"
-          >
-            展开相关
-          </el-button>
-          <el-button
-            size="small"
-            type="primary"
-            @click="copyNodeInfo"
-            :icon="CopyDocument"
-          >
-            复制信息
-          </el-button>
-        </div>
-      </template>
-    </el-card>
+    <div v-else class="no-node-selected">
+      <p>未选择任何节点</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useGraphStore } from '@/stores/graph'
-import type { GraphNode, GraphEdge } from '@/services/graphService'
+import type { GraphNode } from '@/services/graphService'
 import {
   Close,
-  ZoomIn,
-  CopyDocument,
-  Monitor,
-  Lightning
 } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 
 // Props
 interface Props {
-  node: GraphNode
+  node: GraphNode | null
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  node: () => null
+})
 
 // Emits
-defineEmits<{
-  close: []
-  expand: [nodeId: string]
-  selectNode: [node: GraphNode]
-}>()
+defineEmits(['close'])
 
-// Store
-const graphStore = useGraphStore()
-const { graphData } = storeToRefs(graphStore)
+// 获取所有节点属性（包括基本属性和properties对象中的属性）
+const getAllNodeProperties = (): Record<string, any> => {
+  if (!props.node) return {}
 
-// Computed
-const adjacentNodes = computed(() => {
-  return graphStore.getAdjacentNodes(props.node.id)
-})
-
-const connectedEdges = computed(() => {
-  return graphData.value.edges.filter(edge =>
-    edge.source === props.node.id || edge.target === props.node.id
-  )
-})
-
-// 获取节点图标
-const getNodeIcon = (nodeType: string) => {
-  const iconMap: Record<string, any> = {
-    'Device': Monitor,
-    'Port': Lightning
+  // 合并基本属性和properties对象中的属性
+  const allProperties: Record<string, any> = {
+    ...props.node.properties,
+    // 添加其他可能在node对象顶层的属性
+    ...(props.node.label ? { label: props.node.label } : {}),
+    ...(props.node.type ? { type: props.node.type } : {}),
   }
-  return iconMap[nodeType] || Lightning
-}
 
-// 获取标签类型
-const getTagType = (nodeType: string) => {
-  const typeMap: Record<string, any> = {
-    'Device': 'primary',
-    'Port': 'success'
-  }
-  return typeMap[nodeType] || 'default'
-}
-
-// 获取边标签类型
-const getEdgeTagType = (edgeType: string) => {
-  const typeMap: Record<string, any> = {
-    'HAS_PORT': 'primary',
-    'CONNECTS_TO': 'success'
-  }
-  return typeMap[edgeType] || 'default'
+  return allProperties
 }
 
 // 格式化属性标签
@@ -205,6 +79,7 @@ const formatPropertyLabel = (key: string): string => {
     'dc': '数据中心',
     'manage_ip': '管理IP',
     'name': '名称',
+    'type': '类型',
     'description': '描述',
     'status': '状态',
     'category': '分类'
@@ -215,7 +90,7 @@ const formatPropertyLabel = (key: string): string => {
 // 格式化属性值
 const formatPropertyValue = (value: any): string => {
   if (value === null || value === undefined) {
-    return '-'
+    return 'N/A'
   }
   if (typeof value === 'boolean') {
     return value ? '是' : '否'
@@ -225,263 +100,84 @@ const formatPropertyValue = (value: any): string => {
   }
   return String(value)
 }
-
-// 获取边的方向描述
-const getEdgeDirection = (edge: GraphEdge): string => {
-  const sourceNode = graphData.value.nodes.find(n => n.id === edge.source)
-  const targetNode = graphData.value.nodes.find(n => n.id === edge.target)
-
-  if (edge.source === props.node.id) {
-    return `→ ${targetNode?.label || '未知'}`
-  } else {
-    return `← ${sourceNode?.label || '未知'}`
-  }
-}
-
-// 复制节点信息
-const copyNodeInfo = async () => {
-  try {
-    const info = {
-      id: props.node.id,
-      label: props.node.label,
-      type: props.node.type,
-      properties: props.node.properties
-    }
-
-    await navigator.clipboard.writeText(JSON.stringify(info, null, 2))
-    ElMessage.success('节点信息已复制到剪贴板')
-  } catch (error) {
-    console.error('复制失败:', error)
-    ElMessage.error('复制失败')
-  }
-}
 </script>
 
 <style scoped>
 .node-panel {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 320px;
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  background: var(--color-bg-default);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-large);
   z-index: 100;
-  animation: slideInRight 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.panel-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  border-radius: 6px;
-  border: 1px solid #d0d7de;
-  background: #ffffff;
-  overflow: hidden;
-}
-
-.panel-header {
+.node-panel-header {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 0;
+  background: var(--color-bg-subtle);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
-.panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.node-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
-  font-size: 16px;
-  color: #24292f;
+  color: var(--color-fg-default);
 }
 
-.title-icon {
-  color: #0969da;
-  font-size: 16px;
+.close-btn {
+  color: var(--color-fg-muted);
 }
 
-.panel-header .el-button {
-  border-radius: 6px;
-  width: 28px;
-  height: 28px;
-  background: #f6f8fa;
-  border: 1px solid #d0d7de;
-  color: #656d76;
-  transition: all 0.2s ease;
+.close-btn:hover {
+  color: var(--color-fg-default);
 }
 
-.panel-header .el-button:hover {
-  background: #f3f4f6;
-  border-color: #afb8c1;
+.node-panel-content {
+  padding: var(--space-3);
+  flex: 1;
+  overflow-y: auto;
 }
 
 .node-info {
-  max-height: 450px;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.info-section {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f6f8fa;
-  border-radius: 6px;
-  border: 1px solid #d0d7de;
-  transition: all 0.2s ease;
-}
-
-.info-section:hover {
-  background: #f3f4f6;
-}
-
-.info-section h4 {
-  margin: 0 0 8px 0;
-  color: #24292f;
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.name-tag {
-  color: white !important;
-  border: none;
-  border-radius: 12px;
-  font-weight: 500;
-  padding: 2px 8px;
-  font-size: 12px;
-}
-
-.item-badge {
-  margin-left: 6px;
-}
-
-.item-badge .el-badge__content {
-  background: #0969da;
-  border: none;
-  border-radius: 8px;
-  font-size: 10px;
-}
-
-.adjacent-nodes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.adjacent-node-tag {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: white !important;
-  border: none;
-  border-radius: 12px;
-  font-weight: 500;
-  padding: 2px 8px;
-  font-size: 11px;
-}
-
-.adjacent-node-tag:hover {
-  opacity: 0.8;
-  transform: scale(1.05);
-}
-
-.connected-edges {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
-.edge-item {
+.info-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 6px 8px;
-  background: #ffffff;
-  border-radius: 6px;
-  font-size: 12px;
-  border: 1px solid #d0d7de;
-  transition: all 0.2s ease;
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border-muted);
 }
 
-.edge-item:hover {
-  background: #f6f8fa;
-}
-
-.edge-item .el-tag {
-  border-radius: 12px;
+.info-item label {
   font-weight: 500;
-  font-size: 10px;
+  color: var(--color-fg-muted);
+  flex: 0 0 80px; /* 固定标签宽度 */
 }
 
-.edge-direction {
-  color: #656d76;
-  font-size: 11px;
-  font-weight: 400;
-}
-
-.panel-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 4px 0;
-}
-
-.panel-actions .el-button {
+.info-item span {
+  color: var(--color-fg-default);
   flex: 1;
-  border-radius: 6px;
-  height: 32px;
-  font-weight: 500;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  border: 1px solid #d0d7de;
+  text-align: right;
+  word-break: break-word;
+  margin-left: var(--space-2);
 }
 
-.panel-actions .el-button:first-child {
-  background: #f6f8fa;
-  color: #24292f;
-}
-
-.panel-actions .el-button:first-child:hover {
-  background: #f3f4f6;
-  border-color: #afb8c1;
-}
-
-.panel-actions .el-button.el-button--primary {
-  background: #2da44e;
-  border-color: #2da44e;
-  color: #ffffff;
-}
-
-.panel-actions .el-button.el-button--primary:hover {
-  background: #2c974b;
-  border-color: #2c974b;
-}
-
-/* 滚动条样式 */
-.node-info::-webkit-scrollbar {
-  width: 8px;
-}
-
-.node-info::-webkit-scrollbar-track {
-  background: #f6f8fa;
-}
-
-.node-info::-webkit-scrollbar-thumb {
-  background: #d0d7de;
-  border-radius: 4px;
-}
-
-.node-info::-webkit-scrollbar-thumb:hover {
-  background: #afb8c1;
+.no-node-selected {
+  padding: var(--space-5);
+  text-align: center;
+  color: var(--color-fg-muted);
 }
 </style>
