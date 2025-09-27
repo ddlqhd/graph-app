@@ -1,5 +1,6 @@
 // Layout registry for dynamic layout registration
 import type { Graph } from '@antv/g6';
+import { RectangularClusterLayout } from './RectangularClusterLayout';
 
 export interface LayoutConfig {
   type: string;
@@ -23,26 +24,75 @@ class LayoutRegistry {
       nodeStrength: -300,
       linkDistance: 150
     });
-    
+
     this.registerLayout('dagre', '层次布局', {
       type: 'dagre',
       rankdir: 'TB',
       nodesep: 20,
       ranksep: 50
     });
-    
+
     this.registerLayout('radial', '辐射布局', {
       type: 'radial',
       center: [400, 300],
       linkDistance: 150,
       maxIteration: 1000
     });
-    
+
     this.registerLayout('grid', '网格布局', {
       type: 'grid',
       begin: [0, 0],
       preventOverlap: true,
       nodeSize: 50
+    });
+
+    // Register the rectangular cluster layout with sample configuration
+    this.registerLayout('rectangular-cluster', '矩形集群布局', {
+      type: 'rectangular-cluster',
+      layoutType: 'rectangular-cluster',
+      layoutParams: {
+        nodeSpacing: 20,
+        clusterSpacing: 50,
+        padding: 30
+      },
+      clusters: [
+        {
+          id: "cluster1",
+          name: "工程部门",
+          subAreas: ["Edge", "Storage"],
+          position: { row: 0, col: 0 },
+          layout: "grid",
+          layoutParams: {
+            nodeSize: 60
+          }
+        },
+        {
+          id: "cluster2",
+          name: "市场营销",
+          subAreas: ["Access", "Compute"],
+          position: { row: 0, col: 1 },
+          layout: "force",
+          layoutParams: {
+            nodeStrength: -30,
+            edgeStrength: 0.1,
+            linkDistance: 100
+          }
+        },
+        {
+          id: "cluster3",
+          name: "销售部门",
+          subAreas: ["Core"],
+          position: { row: 1, col: 0 },
+          layout: "grid",
+          layoutParams: {
+            nodeSize: 60
+          }
+        }
+      ],
+      interClusterConnections: {
+        useOrthogonalEdges: true,
+        minDistance: 30
+      }
     });
   }
 

@@ -1,0 +1,46 @@
+{
+  "layoutType": "rectangular-cluster",
+  "layoutParams": {
+    "nodeSpacing": 20,
+    "clusterSpacing": 50,
+    "padding": 30
+  },
+  "clusters": [
+    {
+      "id": "cluster1",
+      "name": "工程部门",
+      "subAreas": ["Development", "Testing", "DevOps"],
+      "position": {"row": 0, "col": 0},
+      "layout": "grid",
+      "layoutParams": {
+        "nodeSize": 60
+      }
+    },
+    {
+      "id": "cluster2",
+      "name": "市场营销",
+      "subAreas": ["Digital Marketing", "Content Creation"],
+      "position": {"row": 0, "col": 1},
+      "layout": "force",
+      "layoutParams": {
+        "nodeStrength": -30,
+        "edgeStrength": 0.1,
+        "linkDistance": 100
+      }
+    },
+    {
+      "id": "cluster3",
+      "name": "销售部门",
+      "subAreas": ["Domestic Sales", "International Sales"],
+      "position": {"row": 1, "col": 0},
+      "layout": "grid",
+      "layoutParams": {
+        "nodeSize": 60
+      }
+    }
+  ],
+  "interClusterConnections": {
+    "useOrthogonalEdges": true,
+    "minDistance": 30
+  }
+}

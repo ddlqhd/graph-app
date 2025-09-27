@@ -456,20 +456,24 @@ const convertToG6Data = (data: typeof graphData.value) => {
 
     let nodeConfig: any;
 
+    // Include properties from the original node in both cases
+    const baseConfig = {
+      id: node.id,
+      label: node.label,
+      size: node.size || 40,
+      properties: node.properties || {}, // Include properties from the original node
+    }
+
     if (isRouterNode) {
       // Use custom router node for Device type
       nodeConfig = {
-        id: node.id,
-        label: node.label,
+        ...baseConfig,
         type: 'router-node', // Use our custom node type
-        size: node.size || 40,
       }
     } else {
       // Regular node configuration for non-router nodes
       nodeConfig = {
-        id: node.id,
-        label: node.label,
-        size: node.size || 40,
+        ...baseConfig,
         type: 'circle', // Default to circle node type
         style: {
           fill: node.color || getNodeColor(node.type),
@@ -495,6 +499,7 @@ const convertToG6Data = (data: typeof graphData.value) => {
       source: edge.source,
       target: edge.target,
       label: edge.label,
+      properties: edge.properties || {}, // Include properties from the original edge
       style: {
         stroke: edge.color || '#BDC3C7',
         lineWidth: edge.style?.lineWidth || 2

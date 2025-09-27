@@ -43,11 +43,16 @@ class GraphModel {
                            device.properties.name ||
                            device.properties.id ||
                            'Unknown';
+          // 将数据库中的 subarea 属性转换为前端需要的 SubArea 属性
+          const nodeProperties = { ...device.properties };
+          if (nodeProperties.subarea !== undefined && nodeProperties.SubArea === undefined) {
+            nodeProperties.SubArea = nodeProperties.subarea;
+          }
           nodes.set(device.identity.toString(), {
             id: device.identity.toString(),
             label: nodeLabel,
             type: 'Device',
-            properties: device.properties,
+            properties: nodeProperties,
             ...this.getNodeStyle('Device')
           });
         }
@@ -60,11 +65,16 @@ class GraphModel {
                              connectedDevice.properties.name ||
                              connectedDevice.properties.id ||
                              'Unknown';
+            // 将数据库中的 subarea 属性转换为前端需要的 SubArea 属性
+            const nodeProperties = { ...connectedDevice.properties };
+            if (nodeProperties.subarea !== undefined && nodeProperties.SubArea === undefined) {
+              nodeProperties.SubArea = nodeProperties.subarea;
+            }
             nodes.set(connectedDevice.identity.toString(), {
               id: connectedDevice.identity.toString(),
               label: nodeLabel,
               type: 'Device',
-              properties: connectedDevice.properties,
+              properties: nodeProperties,
               ...this.getNodeStyle('Device')
             });
           }
@@ -295,11 +305,16 @@ class GraphModel {
           if (!nodes.has(nodeId)) {
             const nodeLabel = value.properties.device_name || value.properties.port_name ||
                              value.properties.name || value.properties.id || 'Unknown';
+            // 将数据库中的 subarea 属性转换为前端需要的 SubArea 属性
+            const nodeProperties = { ...value.properties };
+            if (nodeProperties.subarea !== undefined && nodeProperties.SubArea === undefined) {
+              nodeProperties.SubArea = nodeProperties.subarea;
+            }
             nodes.set(nodeId, {
               id: nodeId,
               label: nodeLabel,
               type: value.labels[0] || 'Unknown',
-              properties: value.properties,
+              properties: nodeProperties,
               ...this.getNodeStyle(value.labels[0])
             });
           }
