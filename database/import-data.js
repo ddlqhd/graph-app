@@ -210,7 +210,7 @@ async function importPortPortRelationships(driver) {
             const createRelQuery = `
               MATCH (p1:Port {port_name: $src_port})
               MATCH (p2:Port {port_name: $dst_port})
-              CREATE (p1)-[:CONNECTS_TO]->(p2)
+              MERGE (p1)-[:CONNECTS_TO]-(p2)
             `;
             
             await session.run(createRelQuery, {

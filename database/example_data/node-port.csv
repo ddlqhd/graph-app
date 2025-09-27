@@ -88,6 +88,10 @@ device_to_port,Device_016,Device_016_40G_Port1
 device_to_port,Device_016,Device_016_1G_Port2
 device_to_port,Device_016,Device_016_1G_Port3
 device_to_port,Device_016,Device_016_100G_Port4
+device_to_port,Device_016,Device_016_100G_Port5
+device_to_port,Device_016,Device_016_100G_Port6
+device_to_port,Device_016,Device_016_100G_Port7
+device_to_port,Device_016,Device_016_100G_Port8
 device_to_port,Device_017,Device_017_25G_Port1
 device_to_port,Device_017,Device_017_1G_Port2
 device_to_port,Device_017,Device_017_1G_Port3
