@@ -1,43 +1,23 @@
 <template>
-  <el-button-group>
-    <el-tooltip content="力导向布局">
-      <el-button
-        @click="changeLayout('force')"
-        :type="currentLayout === 'force' ? 'primary' : 'default'"
-      >
-        力导向
-      </el-button>
-    </el-tooltip>
-    <el-tooltip content="层次布局">
-      <el-button
-        @click="changeLayout('dagre')"
-        :type="currentLayout === 'dagre' ? 'primary' : 'default'"
-      >
-        层次
-      </el-button>
-    </el-tooltip>
-    <el-tooltip content="辐射布局">
-      <el-button
-        @click="changeLayout('radial')"
-        :type="currentLayout === 'radial' ? 'primary' : 'default'"
-      >
-        辐射
-      </el-button>
-    </el-tooltip>
-    <el-tooltip content="网格布局">
-      <el-button
-        @click="changeLayout('grid')"
-        :type="currentLayout === 'grid' ? 'primary' : 'default'"
-      >
-        网格
-      </el-button>
-    </el-tooltip>
-  </el-button-group>
+  <el-select
+    v-model="currentLayout"
+    placeholder="选择布局"
+    @change="changeLayout"
+    style="width: 150px;"
+  >
+    <el-option
+      v-for="layout in availableLayouts"
+      :key="layout.value"
+      :label="layout.label"
+      :value="layout.value"
+    />
+  </el-select>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { Graph } from '@antv/g6'
+import { layoutRegistry } from '@/utils/layoutRegistry'
 
 // Define props interface
 interface Props {
@@ -60,6 +40,19 @@ const emit = defineEmits<Emits>()
 // State
 const currentLayout = ref('force')
 
+// Computed property to get available layouts from registry
+const availableLayouts = computed(() => layoutRegistry.getAllLayouts())
+
+// Register new layout types dynamically
+const registerLayout = (value: string, label: string, config: any) => {
+  layoutRegistry.registerLayout(value, label, config);
+}
+
+// Unregister a layout type
+const unregisterLayout = (value: string) => {
+  layoutRegistry.unregisterLayout(value);
+}
+
 // Change layout
 const changeLayout = (layoutType: string) => {
   if (!props.graph) return
@@ -67,36 +60,8 @@ const changeLayout = (layoutType: string) => {
   currentLayout.value = layoutType
   emit('layoutChanged', layoutType)
 
-  const layoutConfig: Record<string, any> = {
-    force: {
-      type: 'force',
-      preventOverlap: true,
-      nodeStrength: -300,
-      linkDistance: 150
-    },
-    dagre: {
-      type: 'dagre',
-      rankdir: 'TB',
-      nodesep: 20,
-      ranksep: 50
-    },
-    radial: {
-      type: 'radial',
-      center: [400, 300],
-      linkDistance: 150,
-      maxIteration: 1000,
-      focusNode: props.graphData.nodes[0]?.id
-    },
-    grid: {
-      type: 'grid',
-      begin: [0, 0],
-      preventOverlap: true,
-      nodeSize: 50
-    }
-  }
-
-  // Update layout with new config
-  props.graph.updateLayout(layoutConfig[layoutType])
+  // Use the layout registry to apply the layout
+  layoutRegistry.applyLayout(props.graph, layoutType, props.graphData);
 }
 
 // Watch for graph changes and reset to force layout if graph changes
@@ -105,6 +70,12 @@ watch(() => props.graph, (newGraph) => {
     // Optionally reset to default layout when new graph is provided
     currentLayout.value = 'force'
   }
+})
+
+// Expose registration functions for dynamic layouts
+defineExpose({
+  registerLayout,
+  unregisterLayout
 })
 </script>
 
