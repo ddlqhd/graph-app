@@ -98,39 +98,7 @@
       </div>
 
       <!-- 图例 -->
-      <div class="graph-legend">
-        <div class="legend-title">图例</div>
-        <div class="legend-items">
-          <!-- Node legends -->
-          <div
-            v-for="nodeType in nodeTypes"
-            :key="`node-${nodeType}`"
-            class="legend-item"
-          >
-            <div
-              class="legend-color"
-              :style="{ backgroundColor: getNodeColor(nodeType) }"
-            ></div>
-            <span class="legend-label">
-              {{ nodeType }} ({{ nodeCounts[nodeType] || 0 }})
-            </span>
-          </div>
-          
-          <!-- Edge legends -->
-          <div
-            v-for="edgeType in edgeTypes"
-            :key="`edge-${edgeType}`"
-            class="legend-item"
-          >
-            <div class="legend-line" 
-                 :style="{ backgroundColor: getEdgeColor(edgeType) }">
-            </div>
-            <span class="legend-label">
-              {{ edgeType }} ({{ edgeCounts[edgeType] || 0 }})
-            </span>
-          </div>
-        </div>
-      </div>
+      <GraphLegend :graph-data="graphData" />
     </div>
 
     <!-- 节点详情面板 -->
@@ -158,6 +126,7 @@ import { storeToRefs } from 'pinia'
 import { useGraphStore } from '@/stores/graph'
 import GraphNodePanel from './GraphNodePanel.vue'
 import GraphEdgePanel from './GraphEdgePanel.vue'
+import GraphLegend from './GraphLegend.vue'
 import {
   FullScreen,
   ZoomIn,
@@ -200,7 +169,9 @@ const currentLayout = ref('force')
 let isUpdating = false
 let updateTimeoutId: number | null = null
 
-// Computed
+
+
+// Define type color mappings (needed for convertToG6Data)
 const nodeTypeColors: Record<string, string> = {
   'Device': '#3498DB',
   'Port': '#E74C3C'
@@ -217,49 +188,6 @@ const getNodeColor = (nodeType: string) => {
 const getEdgeColor = (edgeType: string) => {
   return edgeTypeColors[edgeType] || '#BDC3C7'
 }
-
-// Get unique edge types from current graph data
-const edgeTypes = computed(() => {
-  if (!graphData.value || !graphData.value.edges) {
-    return []
-  }
-  
-  const types = new Set<string>()
-  graphData.value.edges.forEach(edge => {
-    // Using the edge label as the type, or default if not available
-    const type = edge.label || 'Relationship'
-    types.add(type)
-  })
-  
-  return Array.from(types)
-})
-
-// Count nodes of each type
-const nodeCounts = computed(() => {
-  const counts: Record<string, number> = {}
-  
-  if (graphData.value && graphData.value.nodes) {
-    graphData.value.nodes.forEach(node => {
-      counts[node.type] = (counts[node.type] || 0) + 1
-    })
-  }
-  
-  return counts
-})
-
-// Count edges of each type
-const edgeCounts = computed(() => {
-  const counts: Record<string, number> = {}
-  
-  if (graphData.value && graphData.value.edges) {
-    graphData.value.edges.forEach(edge => {
-      const type = edge.label || 'Relationship'
-      counts[type] = (counts[type] || 0) + 1
-    })
-  }
-  
-  return counts
-})
 
 // 初始化图
 const initGraph = () => {
@@ -1101,65 +1029,7 @@ onUnmounted(() => {
   border-color: var(--color-border-muted);
 }
 
-.graph-legend {
-  position: absolute;
-  bottom: var(--space-3);
-  right: var(--space-3);
-  background: var(--color-bg-default);
-  padding: var(--space-3);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-medium);
-  border: 1px solid var(--color-border-default);
-  min-width: 120px;
-  transition: all 0.2s cubic-bezier(0.3, 0, 0.5, 1);
-}
 
-.graph-legend:hover {
-  box-shadow: var(--shadow-large);
-  border-color: var(--color-border-muted);
-}
-
-.legend-title {
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-  font-size: 14px;
-  color: var(--color-fg-default);
-  line-height: 20px;
-}
-
-.legend-items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 2px 0;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid var(--color-border-default);
-}
-
-.legend-line {
-  width: 20px;
-  height: 2px;
-  background-color: var(--color-fg-default);
-  margin-top: 6px;
-}
-
-.legend-label {
-  font-size: 12px;
-  color: var(--color-fg-muted);
-  font-weight: 400;
-  line-height: 18px;
-}
 
 .debug-info {
   position: absolute;
