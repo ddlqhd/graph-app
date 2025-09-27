@@ -8,11 +8,12 @@ class GraphModel {
   // 获取所有节点和关系数据，用于图可视化
   async getGraphData(limit = 100) {
     // 优化查询，将端口间的连接直接转换为设备间的连接
+    // 使用有向关系避免重复计算双向连接
     const query = `
-      // 获取所有设备节点
-      MATCH (d:Device)
-      OPTIONAL MATCH (d)-[:HAS_PORT]->(p)-[:CONNECTS_TO]-(p2)<-[:HAS_PORT]-(d2)
-      WHERE d2 IS NOT NULL
+      // 获取所有设备节点及其连接（避免双向重复）
+      // 使用 id(d) < id(d2) 来确保每对设备只计算一次连接
+      MATCH (d:Device)-[:HAS_PORT]->(p:Port)-[:CONNECTS_TO]-(p2:Port)<-[:HAS_PORT]-(d2:Device)
+      WHERE id(d) < id(d2)  // 确保每对设备只计算一次连接
       RETURN d, d2, p, p2
       LIMIT toInteger($limit)
       
@@ -21,7 +22,6 @@ class GraphModel {
       // 获取没有连接的设备节点
       MATCH (d:Device)
       WHERE NOT (d)-[:HAS_PORT]->(:Port)-[:CONNECTS_TO]-(:Port)<-[:HAS_PORT]-(:Device)
-      AND NOT (d)-[:HAS_PORT]->(:Port)<-[:HAS_PORT]-(:Device)
       RETURN d, null as d2, null as p, null as p2
     `;
 
