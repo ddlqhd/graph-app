@@ -16,9 +16,9 @@ class GraphModel {
       WHERE id(d) < id(d2)  // 确保每对设备只计算一次连接
       RETURN d, d2, p, p2
       LIMIT toInteger($limit)
-      
+
       UNION
-      
+
       // 获取没有连接的设备节点
       MATCH (d:Device)
       WHERE NOT (d)-[:HAS_PORT]->(:Port)-[:CONNECTS_TO]-(:Port)<-[:HAS_PORT]-(:Device)
@@ -39,9 +39,9 @@ class GraphModel {
 
         // 添加设备节点
         if (device && !nodes.has(device.identity.toString())) {
-          const nodeLabel = device.properties.device_name || 
-                           device.properties.name || 
-                           device.properties.id || 
+          const nodeLabel = device.properties.device_name ||
+                           device.properties.name ||
+                           device.properties.id ||
                            'Unknown';
           nodes.set(device.identity.toString(), {
             id: device.identity.toString(),
@@ -56,9 +56,9 @@ class GraphModel {
         if (connectedDevice) {
           // 添加连接的设备节点
           if (!nodes.has(connectedDevice.identity.toString())) {
-            const nodeLabel = connectedDevice.properties.device_name || 
-                             connectedDevice.properties.name || 
-                             connectedDevice.properties.id || 
+            const nodeLabel = connectedDevice.properties.device_name ||
+                             connectedDevice.properties.name ||
+                             connectedDevice.properties.id ||
                              'Unknown';
             nodes.set(connectedDevice.identity.toString(), {
               id: connectedDevice.identity.toString(),
@@ -216,7 +216,7 @@ class GraphModel {
 
       return result.records.map(record => {
         const node = record.get('n');
-        const nodeLabel = node.properties.device_name || node.properties.port_name || 
+        const nodeLabel = node.properties.device_name || node.properties.port_name ||
                          node.properties.name || node.properties.id;
         return {
           id: node.identity.toString(),
@@ -293,7 +293,7 @@ class GraphModel {
         if (value && value.labels) { // 这是一个节点
           const nodeId = value.identity.toString();
           if (!nodes.has(nodeId)) {
-            const nodeLabel = value.properties.device_name || value.properties.port_name || 
+            const nodeLabel = value.properties.device_name || value.properties.port_name ||
                              value.properties.name || value.properties.id || 'Unknown';
             nodes.set(nodeId, {
               id: nodeId,
@@ -357,15 +357,8 @@ class GraphModel {
       const endDevice = record.get('endDevice');
 
       if (!path) {
-        // Fallback for OPTIONAL MATCH when no path is found
-        const nodes = [startDevice, endDevice].map(node => ({
-          id: node.identity.toString(),
-          label: node.properties.device_name || 'Unknown',
-          type: node.labels[0],
-          properties: node.properties,
-          ...this.getNodeStyle(node.labels[0])
-        }));
-        return { nodes: nodes, edges: [] };
+        // Return empty path as per requirements when nodes are not connected
+        return { nodes: [], edges: [] };
       }
 
       // --- The definitive way to correctly extract an ordered path ---
