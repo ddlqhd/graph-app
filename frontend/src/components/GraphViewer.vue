@@ -61,9 +61,9 @@
 
         <el-divider direction="vertical" />
 
-        <LayoutControls 
-            :graph="graph" 
-            :graph-data="graphData" 
+        <LayoutControls
+            :graph="graph"
+            :graph-data="graphData"
             @layout-changed="onLayoutChanged"
           />
       </div>
@@ -79,7 +79,7 @@
       @close="clearSelection"
       @expand="onExpandNode"
     />
-    
+
     <!-- 边详情面板 -->
     <GraphEdgePanel
       v-if="selectedEdge"
@@ -171,6 +171,142 @@ const initGraph = () => {
     return
   }
 
+  // 注册自定义节点类型 for router icons with border and background
+  G6.registerNode('router-node', {
+    // 继承自 single-node，确保基本交互功能
+    options: {
+      getAnchorPoints() {
+        return [
+          [0.5, 0],    // top
+          [1, 0.5],    // right
+          [0.5, 1],    // bottom
+          [0, 0.5],    // left
+        ];
+      },
+    },
+    draw(cfg, group) {
+      const size = cfg.size || 40;
+      const width = size;
+      const height = size;
+
+      // Draw background rectangle with light gray fill and transparent border
+      const rect = group.addShape('rect', {
+        attrs: {
+          x: -width / 2,
+          y: -height / 2,
+          width,
+          height,
+          fill: '#f0f0f0', // light gray background
+          stroke: 'transparent', // transparent border
+          lineWidth: 1,
+          cursor: 'pointer',
+          // Enable event handling on this shape
+          capture: true
+        },
+        name: 'background-rect',
+      });
+
+      // Add the router icon image
+      const image = group.addShape('image', {
+        attrs: {
+          x: -width / 2 + 4, // Small padding
+          y: -height / 2 + 4, // Small padding
+          width: width - 8, // Account for padding
+          height: height - 8, // Account for padding
+          img: new URL('@/assets/router-icon.png', import.meta.url).href,
+          zIndex: 1, // Ensure image is above the background
+          cursor: 'pointer'
+        },
+        name: 'node-image',
+        draggable: false
+      });
+
+      // 重要：设置图片元素不捕获事件，允许事件穿透到节点容器
+      image.set('capture', false);
+
+      // If the node has a label, add it below the icon
+      if (cfg.label) {
+        const label = group.addShape('text', {
+          attrs: {
+            text: cfg.label,
+            x: 0,
+            y: height / 2 + 10, // Position below the icon
+            textAlign: 'center',
+            textBaseline: 'top',
+            fontSize: 12,
+            fill: '#333',
+            cursor: 'pointer'
+          },
+          name: 'node-label',
+        });
+      }
+
+      return rect;
+    },
+
+    setState(name, value, item) {
+      const group = item.getContainer();
+      const rect = group.find(element => element.get('name') === 'background-rect');
+      const label = group.find(element => element.get('name') === 'node-label');
+
+      if (name === 'selected') {
+        if (value) {
+          // Apply selected state styles
+          rect.attr({
+            stroke: '#2ECC71', // green border when selected
+            lineWidth: 4
+          });
+        } else {
+          // Revert to default styles
+          rect.attr({
+            stroke: 'transparent', // transparent border
+            lineWidth: 1
+          });
+        }
+      } else if (name === 'highlight') {
+        if (value) {
+          // Apply highlight state styles
+          rect.attr({
+            stroke: '#F39C12', // orange border when highlighted
+            lineWidth: 5,
+            shadowColor: '#F39C12',
+            shadowBlur: 15,
+          });
+        } else {
+          // Revert to default styles
+          rect.attr({
+            stroke: 'transparent', // transparent border
+            lineWidth: 1,
+            shadowColor: undefined,
+            shadowBlur: 0,
+          });
+        }
+      } else if (name === 'inactive') {
+        if (value) {
+          // Apply inactive state styles
+          rect.attr({
+            fill: '#333',
+            stroke: '#222',
+            opacity: 0.3,
+          });
+          if (label) {
+            label.attr('opacity', 0.3);
+          }
+        } else {
+          // Revert to default styles
+          rect.attr({
+            fill: '#f0f0f0', // light gray background
+            stroke: 'transparent', // transparent border
+            opacity: 1,
+          });
+          if (label) {
+            label.attr('opacity', 1);
+          }
+        }
+      }
+    },
+  }, 'single-node'); // 继承自 single-node 以确保基本交互功能
+
   // 获取容器的实际尺寸
   const { clientWidth, clientHeight } = graphContainer.value
   const width = clientWidth || props.width
@@ -210,9 +346,10 @@ const initGraph = () => {
       },
       defaultNode: {
         size: 40,
+        type: 'circle', // Default shape for non-image nodes
         style: {
           fill: '#4ECDC4',
-          stroke: '#fff',
+          stroke: 'transparent', // Transparent border
           lineWidth: 2
         },
         labelCfg: {
@@ -236,7 +373,7 @@ const initGraph = () => {
           }
         }
       },
-      
+
       // 状态样式
       nodeStateStyles: {
         highlight: {
@@ -248,7 +385,7 @@ const initGraph = () => {
         },
         inactive: {
           fill: '#333',
-          stroke: '#222',
+          stroke: 'transparent',
           lineWidth: 1,
           opacity: 0.3,
         },
@@ -278,8 +415,6 @@ const initGraph = () => {
         }
       }
     }
-
-    
 
     graph = new G6.Graph(graphConfig)
 
@@ -438,12 +573,33 @@ const convertToG6Data = (data: typeof graphData.value) => {
   data.nodes.forEach((node, index) => {
     console.log(`  转换节点 ${index + 1}:`, node)
 
-    const nodeConfig: any = {
-      id: node.id,
-      label: node.label,
-      size: node.size || 40,
-      style: {
-        fill: node.color || getNodeColor(node.type)
+    // Check if the node type should use router icon
+    const isRouterNode = node.type === 'Device'; // Assuming Device nodes should use router icon
+
+    let nodeConfig: any;
+
+    if (isRouterNode) {
+      // Use custom router node for Device type
+      nodeConfig = {
+        id: node.id,
+        label: node.label,
+        type: 'router-node', // Use our custom node type
+        size: node.size || 40,
+      }
+    } else {
+      // Regular node configuration for non-router nodes
+      nodeConfig = {
+        id: node.id,
+        label: node.label,
+        size: node.size || 40,
+        type: 'circle', // Default to circle node type
+        style: {
+          fill: node.color || getNodeColor(node.type),
+          stroke: 'transparent', // Transparent border
+          lineWidth: 1,
+          opacity: 1,
+          cursor: 'pointer'
+        }
       }
     }
 
@@ -494,11 +650,11 @@ const updateGraphData = async () => {
     console.log('⚠️ updateGraphData 已在执行中，忽略这次调用')
     return
   }
-  
+
   // 设置锁状态
   isUpdating = true
   console.log('🔒 设置 updateGraphData 锁状态')
-  
+
   try {
     console.log('=== updateGraphData 开始执行 ===')
     console.log('graphData.value:', graphData.value)
@@ -544,15 +700,15 @@ const updateGraphData = async () => {
 
       // 先完全清除现有数据和状态，解决ID重复问题
       console.log('🧹 完全清除现有数据')
-      
+
       // 强制清除所有现有元素
       try {
         // 获取所有现有节点和边的引用
         const existingNodes = [...graph.getNodes()]
         const existingEdges = [...graph.getEdges()]
-        
+
         console.log(`清除前状态: ${existingNodes.length}个节点, ${existingEdges.length}条边`)
-        
+
         // 先移除所有边，再移除节点
         existingEdges.forEach(edge => {
           try {
@@ -561,7 +717,7 @@ const updateGraphData = async () => {
             console.warn('移除边时出错:', e)
           }
         })
-        
+
         existingNodes.forEach(node => {
           try {
             graph.removeItem(node, false) // false表示不触发重新渲染
@@ -569,18 +725,18 @@ const updateGraphData = async () => {
             console.warn('移除节点时出错:', e)
           }
         })
-        
+
         console.log('✅ 手动移除完成')
       } catch (error) {
         console.warn('⚠️ 手动清除时出错:', error)
       }
-      
+
       // 使用clear()方法进行彻底清理
       graph.clear()
-      
+
       // 等待DOM更新完成
       await nextTick()
-      
+
       // 验证清理结果
       console.log(`清除后验证: ${graph.getNodes().length}个节点, ${graph.getEdges().length}条边`)
 
@@ -622,12 +778,12 @@ const updateGraphData = async () => {
 
         // 等待更长时间确保清理完成
         await new Promise(resolve => setTimeout(resolve, 100))
-        
+
         // 再次验证清理结果
         const remainingNodes = graph.getNodes().length
         const remainingEdges = graph.getEdges().length
         console.log(`设置新数据前再次检查: ${remainingNodes}个节点, ${remainingEdges}条边`)
-        
+
         if (remainingNodes > 0 || remainingEdges > 0) {
           console.warn('⚠️ 检测到未清理干净的元素，再次清理')
           graph.clear()
@@ -637,10 +793,10 @@ const updateGraphData = async () => {
         // 设置数据
         console.log('📊 开始设置新数据...')
         graph.data(g6Data)
-        
+
         // 等待一个周期再渲染
         await nextTick()
-        
+
         console.log('🎨 开始渲染...')
         graph.render()
         console.log('✅ G6 4.x data + render 完成')
