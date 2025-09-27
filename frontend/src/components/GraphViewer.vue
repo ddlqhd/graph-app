@@ -406,7 +406,8 @@ const initGraph = () => {
         // 鼠标悬停时的样式
         hover: {
           stroke: '#2ECC71',
-          lineWidth: 4
+          lineWidth: 4,
+          cursor: 'pointer'
         },
         // 选中时的样式
         selected: {
@@ -448,7 +449,7 @@ const initGraph = () => {
   }
 }
 
-// 绑定图事件
+  // 绑定图事件
 const bindEvents = () => {
   if (!graph) return
 
@@ -496,21 +497,6 @@ const bindEvents = () => {
     }
   })
 
-  // 边悬浮事件
-  graph.on('edge:mouseenter', (evt) => {
-    const { item } = evt
-    if (item && !item.hasState('selected')) {
-      graph.setItemState(item, 'hover', true)
-    }
-  })
-
-  graph.on('edge:mouseleave', (evt) => {
-    const { item } = evt
-    if (item && !item.hasState('selected')) {
-      graph.clearItemStates(item, 'hover')
-    }
-  })
-
   // 画布点击事件（清除选择）
   graph.on('canvas:click', () => {
     clearSelection() // Use the local clearSelection function to clear visual states
@@ -519,30 +505,53 @@ const bindEvents = () => {
   // 节点悬浮事件
   graph.on('node:mouseenter', (evt) => {
     const { item } = evt
-    if (item && !item.hasState('selected')) {
+    if (item) {
       graph.setItemState(item, 'hover', true)
+      // Change cursor to hand when hovering over nodes
+      if (graphContainer.value) {
+        graphContainer.value.style.cursor = 'pointer'
+      }
     }
   })
 
   graph.on('node:mouseleave', (evt) => {
     const { item } = evt
-    if (item && !item.hasState('selected')) {
-      graph.setItemState(item, 'hover', false)
+    if (item) {
+      graph.clearItemStates(item, 'hover')
+      // Reset cursor to default when leaving nodes
+      if (graphContainer.value) {
+        graphContainer.value.style.cursor = 'default'
+      }
     }
   })
 
   // 边悬浮事件
   graph.on('edge:mouseenter', (evt) => {
     const { item } = evt
-    if (item && !item.hasState('selected')) {
+    if (item) {
       graph.setItemState(item, 'hover', true)
+      // Change cursor to hand when hovering over edges
+      if (graphContainer.value) {
+        graphContainer.value.style.cursor = 'pointer'
+      }
     }
   })
 
   graph.on('edge:mouseleave', (evt) => {
     const { item } = evt
-    if (item && !item.hasState('selected')) {
-      graph.setItemState(item, 'hover', false)
+    if (item) {
+      graph.clearItemStates(item, 'hover')
+      // Reset cursor to default when leaving edges
+      if (graphContainer.value) {
+        graphContainer.value.style.cursor = 'default'
+      }
+    }
+  })
+
+  // 画布悬浮事件 - reset cursor when not over any node or edge
+  graph.on('canvas:mouseenter', () => {
+    if (graphContainer.value) {
+      graphContainer.value.style.cursor = 'default'
     }
   })
 }
