@@ -101,16 +101,33 @@
       <div class="graph-legend">
         <div class="legend-title">图例</div>
         <div class="legend-items">
+          <!-- Node legends -->
           <div
             v-for="nodeType in nodeTypes"
-            :key="nodeType"
+            :key="`node-${nodeType}`"
             class="legend-item"
           >
             <div
               class="legend-color"
               :style="{ backgroundColor: getNodeColor(nodeType) }"
             ></div>
-            <span class="legend-label">{{ nodeType }}</span>
+            <span class="legend-label">
+              {{ nodeType }} ({{ nodeCounts[nodeType] || 0 }})
+            </span>
+          </div>
+          
+          <!-- Edge legends -->
+          <div
+            v-for="edgeType in edgeTypes"
+            :key="`edge-${edgeType}`"
+            class="legend-item"
+          >
+            <div class="legend-line" 
+                 :style="{ backgroundColor: getEdgeColor(edgeType) }">
+            </div>
+            <span class="legend-label">
+              {{ edgeType }} ({{ edgeCounts[edgeType] || 0 }})
+            </span>
           </div>
         </div>
       </div>
@@ -189,9 +206,60 @@ const nodeTypeColors: Record<string, string> = {
   'Port': '#E74C3C'
 }
 
+const edgeTypeColors: Record<string, string> = {
+  'default': '#BDC3C7'  // Default color for edges
+}
+
 const getNodeColor = (nodeType: string) => {
   return nodeTypeColors[nodeType] || '#95A5A6'
 }
+
+const getEdgeColor = (edgeType: string) => {
+  return edgeTypeColors[edgeType] || '#BDC3C7'
+}
+
+// Get unique edge types from current graph data
+const edgeTypes = computed(() => {
+  if (!graphData.value || !graphData.value.edges) {
+    return []
+  }
+  
+  const types = new Set<string>()
+  graphData.value.edges.forEach(edge => {
+    // Using the edge label as the type, or default if not available
+    const type = edge.label || 'Relationship'
+    types.add(type)
+  })
+  
+  return Array.from(types)
+})
+
+// Count nodes of each type
+const nodeCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  
+  if (graphData.value && graphData.value.nodes) {
+    graphData.value.nodes.forEach(node => {
+      counts[node.type] = (counts[node.type] || 0) + 1
+    })
+  }
+  
+  return counts
+})
+
+// Count edges of each type
+const edgeCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  
+  if (graphData.value && graphData.value.edges) {
+    graphData.value.edges.forEach(edge => {
+      const type = edge.label || 'Relationship'
+      counts[type] = (counts[type] || 0) + 1
+    })
+  }
+  
+  return counts
+})
 
 // 初始化图
 const initGraph = () => {
@@ -1077,6 +1145,13 @@ onUnmounted(() => {
   height: 12px;
   border-radius: 50%;
   border: 1px solid var(--color-border-default);
+}
+
+.legend-line {
+  width: 20px;
+  height: 2px;
+  background-color: var(--color-fg-default);
+  margin-top: 6px;
 }
 
 .legend-label {
