@@ -54,11 +54,11 @@ graphsql/
 
 ```bash
 # 安装 Node.js (推荐使用 nvm)
-nvm install 18
-nvm use 18
+nvm install 20
+nvm use 20
 
 # 验证安装
-node --version  # v18.x.x
+node --version  # v20.x.x
 npm --version   # 9.x.x
 ```
 
@@ -363,44 +363,29 @@ class GraphModel {
 
 ## 测试
 
+> **注意:** 当前项目的测试框架和脚本尚未完全定义。以下为占位符，待后续完善。
+
 ### 前端测试
 
 ```bash
-# 单元测试
+# 单元测试 (待完善)
 npm run test:unit
 
-# E2E 测试
+# E2E 测试 (待完善)
 npm run test:e2e
 
-# 组件测试
+# 组件测试 (待完善)
 npm run test:component
 ```
 
 ### 后端测试
 
 ```bash
-# API 测试
+# API 测试 (待完善)
 npm run test
 
-# 集成测试
+# 集成测试 (待完善)
 npm run test:integration
-```
-
-### 测试示例
-
-```javascript
-// tests/api.test.js
-describe('Graph API', () => {
-  test('should return graph data', async () => {
-    const response = await request(app)
-      .get('/api/graph/data')
-      .expect(200)
-
-    expect(response.body.success).toBe(true)
-    expect(response.body.data).toHaveProperty('nodes')
-    expect(response.body.data).toHaveProperty('edges')
-  })
-})
 ```
 
 ## 调试技巧

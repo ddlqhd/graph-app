@@ -139,7 +139,11 @@ docker build -t graphsql-frontend .
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
+> **注意:** `docker-compose.prod.yml` 文件未在项目结构中提供，此命令假定其存在并包含生产环境配置。
+
 ### Kubernetes 部署
+
+> **注意:** `k8s/` 目录未在项目结构中提供，此部分为未来部署的占位符。
 
 1. **创建命名空间**
 
