@@ -513,8 +513,7 @@ const bindEvents = () => {
 
   // 画布点击事件（清除选择）
   graph.on('canvas:click', () => {
-    graphStore.clearSelection()
-    clearPathHighlight() // 同时清除路径高亮
+    clearSelection() // Use the local clearSelection function to clear visual states
   })
 
   // 节点悬浮事件
